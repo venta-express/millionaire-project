@@ -13,6 +13,7 @@ from PySide6.QtGui import QFont, QColor
 from PySide6.QtPrintSupport import QPrinter, QPrintDialog
 
 from utils.styles import COLORS
+from utils.constants import FONT_FAMILY, APP_NAME, LABEL_ATENCION
 from models.ventas import (
     ItemVenta, buscar_clientes, obtener_o_crear_cliente,
     buscar_cliente_por_cedula, registrar_venta, obtener_venta
@@ -49,12 +50,12 @@ class DialogFactura(QDialog):
 
         # Encabezado
         brand = QLabel("AutoParts Express")
-        brand.setFont(QFont("Segoe UI", 20, QFont.Bold))
+        brand.setFont(QFont(FONT_FAMILY, 20, QFont.Bold))
         brand.setStyleSheet(f"color: {COLORS['primary']};")
         brand.setAlignment(Qt.AlignCenter)
 
         sub = QLabel("Tienda de Repuestos y Accesorios de Motos")
-        sub.setFont(QFont("Segoe UI", 11))
+        sub.setFont(QFont(FONT_FAMILY, 11))
         sub.setStyleSheet(f"color: {COLORS['muted']};")
         sub.setAlignment(Qt.AlignCenter)
 
@@ -63,7 +64,7 @@ class DialogFactura(QDialog):
         sep1.setStyleSheet(f"background: {COLORS['primary']}; margin: 16px 0;")
 
         num = QLabel(f"FACTURA N.° {v['numero_factura']}")
-        num.setFont(QFont("Segoe UI", 13, QFont.Bold))
+        num.setFont(QFont(FONT_FAMILY, 13, QFont.Bold))
         num.setStyleSheet(f"color: {COLORS['accent']};")
         num.setAlignment(Qt.AlignCenter)
 
@@ -88,11 +89,11 @@ class DialogFactura(QDialog):
             for key, val in pairs:
                 row = QHBoxLayout()
                 lk = QLabel(f"{key}:")
-                lk.setFont(QFont("Segoe UI", 11, QFont.DemiBold))
+                lk.setFont(QFont(FONT_FAMILY, 11, QFont.DemiBold))
                 lk.setStyleSheet(f"color: {COLORS['muted']};")
                 lk.setFixedWidth(90)
                 lv = QLabel(str(val))
-                lv.setFont(QFont("Segoe UI", 11))
+                lv.setFont(QFont(FONT_FAMILY, 11))
                 lv.setStyleSheet(f"color: {COLORS['text']};")
                 row.addWidget(lk)
                 row.addWidget(lv)
@@ -157,11 +158,11 @@ class DialogFactura(QDialog):
         def total_row(label, valor, bold=False):
             r = QHBoxLayout()
             lk = QLabel(label)
-            lk.setFont(QFont("Segoe UI", 12, QFont.Bold if bold else QFont.Normal))
+            lk.setFont(QFont(FONT_FAMILY, 12, QFont.Bold if bold else QFont.Normal))
             lk.setStyleSheet(f"color: {COLORS['muted'] if not bold else COLORS['primary']};")
             lk.setFixedWidth(100)
             lv = QLabel(f"$ {valor:,.0f}")
-            lv.setFont(QFont("Segoe UI", 12, QFont.Bold if bold else QFont.Normal))
+            lv.setFont(QFont(FONT_FAMILY, 12, QFont.Bold if bold else QFont.Normal))
             lv.setStyleSheet(f"color: {COLORS['accent'] if bold else COLORS['text']};")
             lv.setAlignment(Qt.AlignRight)
             r.addWidget(lk)
@@ -176,7 +177,7 @@ class DialogFactura(QDialog):
         cl.addSpacing(24)
 
         gracias = QLabel("¡Gracias por su compra!")
-        gracias.setFont(QFont("Segoe UI", 11))
+        gracias.setFont(QFont(FONT_FAMILY, 11))
         gracias.setStyleSheet(f"color: {COLORS['muted']};")
         gracias.setAlignment(Qt.AlignCenter)
         cl.addWidget(gracias)
@@ -203,7 +204,7 @@ class VentasView(QWidget):
         super().__init__()
         self.setStyleSheet("background-color: #F4F6FA;")
         self._carrito: list[ItemVenta] = []
-        self._cliente_id: int = None
+        self._cliente_id: int | None = None
         self._search_timer = QTimer()
         self._search_timer.setSingleShot(True)
         self._search_timer.timeout.connect(self._buscar_productos)
@@ -219,7 +220,7 @@ class VentasView(QWidget):
         left.setSpacing(14)
 
         lbl = QLabel("Catálogo de Productos")
-        lbl.setFont(QFont("Segoe UI", 15, QFont.Bold))
+        lbl.setFont(QFont(FONT_FAMILY, 15, QFont.Bold))
         lbl.setStyleSheet(f"color: {COLORS['primary']};")
 
         self.prod_search = QLineEdit()
@@ -258,7 +259,7 @@ class VentasView(QWidget):
         right.setSpacing(14)
 
         lbl2 = QLabel("Carrito de Venta")
-        lbl2.setFont(QFont("Segoe UI", 15, QFont.Bold))
+        lbl2.setFont(QFont(FONT_FAMILY, 15, QFont.Bold))
         lbl2.setStyleSheet(f"color: {COLORS['primary']};")
 
         self.cart_table = QTableWidget()
@@ -278,7 +279,7 @@ class VentasView(QWidget):
         )
         total_layout = QHBoxLayout(total_frame)
         self.lbl_total = QLabel("Total: $ 0")
-        self.lbl_total.setFont(QFont("Segoe UI", 18, QFont.Bold))
+        self.lbl_total.setFont(QFont(FONT_FAMILY, 18, QFont.Bold))
         self.lbl_total.setStyleSheet("color: white;")
         total_layout.addStretch()
         total_layout.addWidget(self.lbl_total)
@@ -291,7 +292,7 @@ class VentasView(QWidget):
         cliente_fl.setSpacing(10)
 
         lbl_cli = QLabel("Datos del Cliente")
-        lbl_cli.setFont(QFont("Segoe UI", 13, QFont.Bold))
+        lbl_cli.setFont(QFont(FONT_FAMILY, 13, QFont.Bold))
         lbl_cli.setStyleSheet(f"color: {COLORS['primary']};")
 
         cedula_row = QHBoxLayout()
@@ -313,7 +314,7 @@ class VentasView(QWidget):
         # Método de pago
         pago_row = QHBoxLayout()
         lbl_pago = QLabel("Método:")
-        lbl_pago.setFont(QFont("Segoe UI", 11, QFont.DemiBold))
+        lbl_pago.setFont(QFont(FONT_FAMILY, 11, QFont.DemiBold))
         lbl_pago.setStyleSheet(f"color: {COLORS['text']};")
         self.combo_pago = QComboBox()
         self.combo_pago.addItems(["Efectivo", "Transferencia"])
@@ -336,7 +337,7 @@ class VentasView(QWidget):
         btn_confirmar = QPushButton("✓  Confirmar Venta y Generar Factura")
         btn_confirmar.setObjectName("btn_primary")
         btn_confirmar.setFixedHeight(50)
-        btn_confirmar.setFont(QFont("Segoe UI", 14, QFont.DemiBold))
+        btn_confirmar.setFont(QFont(FONT_FAMILY, 14, QFont.DemiBold))
         btn_confirmar.setCursor(Qt.PointingHandCursor)
         btn_confirmar.clicked.connect(self._confirmar_venta)
 
@@ -440,11 +441,7 @@ class VentasView(QWidget):
             # Botón eliminar
             btn_rem = QPushButton("✕")
             btn_rem.setFixedHeight(32)
-            btn_rem.setStyleSheet(
-                "QPushButton { background: #FDEDEC; color: #E74C3C; border:none;"
-                "border-radius:6px; font-weight:700; font-size:14px;}"
-                "QPushButton:hover { background: #E74C3C; color: white; }"
-            )
+            btn_rem.setObjectName("btn_table_delete")
             btn_rem.setCursor(Qt.PointingHandCursor)
             btn_rem.clicked.connect(lambda _, i=idx: self._quitar_item(i))
             cell_w = QWidget()

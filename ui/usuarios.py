@@ -20,12 +20,26 @@ from PySide6.QtGui import QFont, QColor
 
 # Paleta de colores compartida
 from utils.styles import COLORS
+from utils.constants import FONT_FAMILY, APP_NAME, LABEL_ATENCION
 
 # Funciones del modelo de autenticación para CRUD de usuarios
 from models.auth import (
     listar_usuarios, crear_usuario, editar_usuario,
     desbloquear_usuario, listar_roles, get_usuario_activo
 )
+
+
+
+# ── Helpers de módulo ──────────────────────────────────────────────────────────
+_COLORES_ROL = {
+    "Gerencia":   ("#D4EDDA", "#155724"),
+    "Inventario": ("#CCE5FF", "#004085"),
+    "Vendedor":   ("#FFF3CD", "#856404"),
+}
+
+def _color_rol(rol: str) -> tuple[str, str]:
+    """Devuelve (bg, fg) según el rol del usuario."""
+    return _COLORES_ROL.get(rol, ("#EEEEEE", "#333333"))
 
 
 class UsuariosView(QWidget):
@@ -56,11 +70,11 @@ class UsuariosView(QWidget):
         title_col.setSpacing(2)
 
         titulo = QLabel("🔐  Usuarios")
-        titulo.setFont(QFont("Segoe UI", 20, QFont.Bold))
+        titulo.setFont(QFont(FONT_FAMILY, 20, QFont.Bold))
         titulo.setStyleSheet(f"color: {COLORS['primary']};")
 
         subtitulo = QLabel("Gestión de usuarios y roles del sistema")
-        subtitulo.setFont(QFont("Segoe UI", 11))
+        subtitulo.setFont(QFont(FONT_FAMILY, 11))
         subtitulo.setStyleSheet(f"color: {COLORS['muted']};")
 
         title_col.addWidget(titulo)
@@ -143,15 +157,9 @@ class UsuariosView(QWidget):
             # Col 3: badge del rol con color por tipo de rol
             lbl_rol = QLabel(f"  {usuario['rol']}  ")
             lbl_rol.setAlignment(Qt.AlignCenter)
-            lbl_rol.setFont(QFont("Segoe UI", 11))
+            lbl_rol.setFont(QFont(FONT_FAMILY, 11))
 
-            # Asignamos color según el nivel de acceso del rol
-            colores_rol = {
-                "Gerencia":   ("#D4EDDA", "#155724"),   # Verde = mayor privilegio
-                "Inventario": ("#CCE5FF", "#004085"),   # Azul = intermedio
-                "Vendedor":   ("#FFF3CD", "#856404"),   # Amarillo = básico
-            }
-            bg, fg = colores_rol.get(usuario["rol"], ("#EEEEEE", "#333333"))
+            bg, fg = _color_rol(usuario["rol"])
             lbl_rol.setStyleSheet(
                 f"background: {bg}; color: {fg}; border-radius: 6px; padding: 2px 4px;"
             )
@@ -197,14 +205,7 @@ class UsuariosView(QWidget):
 
         # Botón editar (siempre disponible)
         btn_edit = QPushButton("✏️ Editar")
-        btn_edit.setStyleSheet("""
-            QPushButton {
-                background: #E8F0FE; color: #1A2942;
-                border: none; border-radius: 6px;
-                padding: 4px 10px; font-size: 12px;
-            }
-            QPushButton:hover { background: #C8D8F8; }
-        """)
+        btn_edit.setObjectName("btn_table_edit")
         btn_edit.setCursor(Qt.PointingHandCursor)
         btn_edit.clicked.connect(lambda _, u=uid: self._abrir_dialogo_editar(u))
         row.addWidget(btn_edit)
@@ -212,14 +213,7 @@ class UsuariosView(QWidget):
         # Botón desbloquear (solo visible si la cuenta está bloqueada)
         if bloqueado:
             btn_desbloq = QPushButton("🔓 Desbloquear")
-            btn_desbloq.setStyleSheet("""
-                QPushButton {
-                    background: #FFF3CD; color: #856404;
-                    border: none; border-radius: 6px;
-                    padding: 4px 10px; font-size: 12px;
-                }
-                QPushButton:hover { background: #FFE69C; }
-            """)
+            btn_desbloq.setObjectName("btn_table_confirm")
             btn_desbloq.setCursor(Qt.PointingHandCursor)
             btn_desbloq.clicked.connect(lambda _, u=uid: self._desbloquear(u))
             row.addWidget(btn_desbloq)
@@ -288,7 +282,7 @@ class DialogoUsuario(QDialog):
         icono = "➕" if self._modo == "crear" else "✏️"
         texto = "Crear nuevo usuario" if self._modo == "crear" else "Editar usuario"
         titulo = QLabel(f"{icono}  {texto}")
-        titulo.setFont(QFont("Segoe UI", 14, QFont.Bold))
+        titulo.setFont(QFont(FONT_FAMILY, 14, QFont.Bold))
         titulo.setStyleSheet(f"color: {COLORS['primary']};")
         layout.addWidget(titulo)
 

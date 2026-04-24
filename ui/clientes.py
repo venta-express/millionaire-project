@@ -21,6 +21,7 @@ from PySide6.QtGui import QFont, QColor
 
 # Paleta de colores compartida de la aplicación
 from utils.styles import COLORS
+from utils.constants import FONT_FAMILY, APP_NAME, LABEL_ATENCION
 
 # Funciones del modelo de ventas para buscar clientes e historial
 from models.ventas import buscar_clientes_historial, historial_cliente
@@ -62,12 +63,12 @@ class ClientesView(QWidget):
 
         # Título del módulo
         titulo = QLabel("👥  Clientes")
-        titulo.setFont(QFont("Segoe UI", 20, QFont.Bold))
+        titulo.setFont(QFont(FONT_FAMILY, 20, QFont.Bold))
         titulo.setStyleSheet(f"color: {COLORS['primary']};")
 
         # Subtítulo descriptivo
         subtitulo = QLabel("Historial de compras por cliente")
-        subtitulo.setFont(QFont("Segoe UI", 11))
+        subtitulo.setFont(QFont(FONT_FAMILY, 11))
         subtitulo.setStyleSheet(f"color: {COLORS['muted']};")
 
         # Columna izquierda: título + subtítulo apilados
@@ -135,7 +136,7 @@ class ClientesView(QWidget):
 
         # Título del panel
         lbl = QLabel("Clientes encontrados")
-        lbl.setFont(QFont("Segoe UI", 13, QFont.DemiBold))
+        lbl.setFont(QFont(FONT_FAMILY, 13, QFont.DemiBold))
         lbl.setStyleSheet(f"color: {COLORS['primary']};")
         layout.addWidget(lbl)
 
@@ -165,7 +166,7 @@ class ClientesView(QWidget):
 
         # Etiqueta de estado (muestra mensajes como "Busca un cliente arriba")
         self.lbl_estado_clientes = QLabel("Busca un cliente arriba para ver resultados.")
-        self.lbl_estado_clientes.setFont(QFont("Segoe UI", 11))
+        self.lbl_estado_clientes.setFont(QFont(FONT_FAMILY, 11))
         self.lbl_estado_clientes.setStyleSheet(f"color: {COLORS['muted']};")
         self.lbl_estado_clientes.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.lbl_estado_clientes)
@@ -186,11 +187,11 @@ class ClientesView(QWidget):
         header_row = QHBoxLayout()
 
         self.lbl_cliente_nombre = QLabel("Selecciona un cliente")
-        self.lbl_cliente_nombre.setFont(QFont("Segoe UI", 14, QFont.Bold))
+        self.lbl_cliente_nombre.setFont(QFont(FONT_FAMILY, 14, QFont.Bold))
         self.lbl_cliente_nombre.setStyleSheet(f"color: {COLORS['primary']};")
 
         self.lbl_total_comprado = QLabel("")
-        self.lbl_total_comprado.setFont(QFont("Segoe UI", 12, QFont.DemiBold))
+        self.lbl_total_comprado.setFont(QFont(FONT_FAMILY, 12, QFont.DemiBold))
         self.lbl_total_comprado.setStyleSheet(f"color: {COLORS['accent']};")
 
         header_row.addWidget(self.lbl_cliente_nombre)
@@ -323,7 +324,7 @@ class ClientesView(QWidget):
             # El cliente no tiene facturas registradas
             self.lbl_total_comprado.setText("Sin compras")
             lbl_vacio = QLabel("Este cliente no tiene compras registradas.")
-            lbl_vacio.setFont(QFont("Segoe UI", 12))
+            lbl_vacio.setFont(QFont(FONT_FAMILY, 12))
             lbl_vacio.setStyleSheet(f"color: {COLORS['muted']};")
             lbl_vacio.setAlignment(Qt.AlignCenter)
             self.historial_layout.insertWidget(0, lbl_vacio)
@@ -362,12 +363,12 @@ class ClientesView(QWidget):
 
         # Número de factura como título de la tarjeta
         lbl_num = QLabel(f"🧾  {factura['numero_factura']}")
-        lbl_num.setFont(QFont("Segoe UI", 12, QFont.Bold))
+        lbl_num.setFont(QFont(FONT_FAMILY, 12, QFont.Bold))
         lbl_num.setStyleSheet(f"color: {COLORS['primary']};")
 
         # Total de la factura destacado en naranja
         lbl_total = QLabel(f"${float(factura['total']):,.2f}")
-        lbl_total.setFont(QFont("Segoe UI", 13, QFont.Bold))
+        lbl_total.setFont(QFont(FONT_FAMILY, 13, QFont.Bold))
         lbl_total.setStyleSheet(f"color: {COLORS['accent']};")
 
         top_row.addWidget(lbl_num)
@@ -379,7 +380,7 @@ class ClientesView(QWidget):
         fecha_str = factura["fecha_hora"].strftime("%d/%m/%Y %H:%M")
         meta = f"📅 {fecha_str}   |   👤 {factura['vendedor_nombre']}   |   💳 {factura['metodo_pago']}"
         lbl_meta = QLabel(meta)
-        lbl_meta.setFont(QFont("Segoe UI", 10))
+        lbl_meta.setFont(QFont(FONT_FAMILY, 10))
         lbl_meta.setStyleSheet(f"color: {COLORS['muted']};")
         layout.addWidget(lbl_meta)
 
@@ -397,7 +398,7 @@ class ClientesView(QWidget):
                 f"— ${float(det['subtotal']):,.2f}"
             )
             lbl_det = QLabel(det_txt)
-            lbl_det.setFont(QFont("Segoe UI", 11))
+            lbl_det.setFont(QFont(FONT_FAMILY, 11))
             lbl_det.setStyleSheet(f"color: {COLORS['text']};")
             layout.addWidget(lbl_det)
 

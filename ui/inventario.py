@@ -354,23 +354,15 @@ class InventarioView(QWidget):
             al.setContentsMargins(6, 4, 6, 4)
             al.setSpacing(6)
 
-            btn_edit = QPushButton("Editar")
+            btn_edit = QPushButton("✏  Editar")
             btn_edit.setFixedHeight(32)
-            btn_edit.setStyleSheet(
-                "QPushButton{background:#EBF5FB;color:#1A2942;border:none;"
-                "border-radius:6px;padding:0 12px;font-weight:600;font-size:12px;}"
-                "QPushButton:hover{background:#1A2942;color:white;}"
-            )
+            btn_edit.setObjectName("btn_table_edit")
             btn_edit.setCursor(Qt.PointingHandCursor)
             btn_edit.clicked.connect(lambda _, pid=p.id: self._editar(pid))
 
-            btn_del = QPushButton("Eliminar")
+            btn_del = QPushButton("🗑  Eliminar")
             btn_del.setFixedHeight(32)
-            btn_del.setStyleSheet(
-                "QPushButton{background:#FDEDEC;color:#E74C3C;border:none;"
-                "border-radius:6px;padding:0 12px;font-weight:600;font-size:12px;}"
-                "QPushButton:hover{background:#E74C3C;color:white;}"
-            )
+            btn_del.setObjectName("btn_table_delete")
             btn_del.setCursor(Qt.PointingHandCursor)
             btn_del.clicked.connect(
                 lambda _, pid=p.id, pnom=p.nombre: self._eliminar(pid, pnom)

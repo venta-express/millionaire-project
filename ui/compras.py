@@ -25,6 +25,7 @@ from PySide6.QtGui import QFont, QColor
 
 # Paleta de colores compartida
 from utils.styles import COLORS
+from utils.constants import FONT_FAMILY, APP_NAME, LABEL_ATENCION
 
 # Modelo de autenticación para obtener el usuario actual
 from models.auth import get_usuario_activo
@@ -68,11 +69,11 @@ class ComprasView(QWidget):
         title_col.setSpacing(2)
 
         titulo = QLabel("🛒  Compras")
-        titulo.setFont(QFont("Segoe UI", 20, QFont.Bold))
+        titulo.setFont(QFont(FONT_FAMILY, 20, QFont.Bold))
         titulo.setStyleSheet(f"color: {COLORS['primary']};")
 
         subtitulo = QLabel("Gestión de pedidos a proveedores")
-        subtitulo.setFont(QFont("Segoe UI", 11))
+        subtitulo.setFont(QFont(FONT_FAMILY, 11))
         subtitulo.setStyleSheet(f"color: {COLORS['muted']};")
 
         title_col.addWidget(titulo)
@@ -104,7 +105,7 @@ class ComprasView(QWidget):
 
         # Ícono y texto de alerta
         self.lbl_alerta = QLabel()
-        self.lbl_alerta.setFont(QFont("Segoe UI", 12))
+        self.lbl_alerta.setFont(QFont(FONT_FAMILY, 12))
         self.lbl_alerta.setStyleSheet("color: #856404;")
         alerta_layout.addWidget(self.lbl_alerta)
         alerta_layout.addStretch()
@@ -117,7 +118,7 @@ class ComprasView(QWidget):
         filtro_row = QHBoxLayout()
 
         lbl_filtro = QLabel("Filtrar por estado:")
-        lbl_filtro.setFont(QFont("Segoe UI", 12))
+        lbl_filtro.setFont(QFont(FONT_FAMILY, 12))
         lbl_filtro.setStyleSheet(f"color: {COLORS['text']};")
 
         # ComboBox con los estados posibles + opción "Todos"
@@ -222,7 +223,7 @@ class ComprasView(QWidget):
             # Col 4: badge de estado con color semántico
             lbl_estado = QLabel(f"  {pedido['estado']}  ")
             lbl_estado.setAlignment(Qt.AlignCenter)
-            lbl_estado.setFont(QFont("Segoe UI", 11, QFont.DemiBold))
+            lbl_estado.setFont(QFont(FONT_FAMILY, 11, QFont.DemiBold))
 
             # Colores según el estado del pedido
             colores = {
@@ -255,27 +256,12 @@ class ComprasView(QWidget):
         """
         if estado == "Pendiente":
             btn = QPushButton("✔  Recibido")
-            btn.setStyleSheet("""
-                QPushButton {
-                    background: #27AE60; color: white;
-                    border: none; border-radius: 6px;
-                    padding: 4px 12px; font-size: 12px;
-                }
-                QPushButton:hover { background: #1E8449; }
-            """)
+            btn.setObjectName("btn_table_confirm")
             btn.setCursor(Qt.PointingHandCursor)
-            # Lambda con captura explícita del ID para evitar el closure problem
             btn.clicked.connect(lambda _, pid=pedido_id: self._marcar_recibido(pid))
         else:
             btn = QPushButton("📄  Ver")
-            btn.setStyleSheet("""
-                QPushButton {
-                    background: #E0E6F0; color: #1A2942;
-                    border: none; border-radius: 6px;
-                    padding: 4px 12px; font-size: 12px;
-                }
-                QPushButton:hover { background: #C8D3E8; }
-            """)
+            btn.setObjectName("btn_table_view")
             btn.setCursor(Qt.PointingHandCursor)
             btn.clicked.connect(lambda _, pid=pedido_id: self._ver_detalle(pid))
 
@@ -393,13 +379,13 @@ class DialogoNuevoPedido(QDialog):
 
         # Título del diálogo
         titulo = QLabel("📦  Nuevo Pedido a Proveedor")
-        titulo.setFont(QFont("Segoe UI", 15, QFont.Bold))
+        titulo.setFont(QFont(FONT_FAMILY, 15, QFont.Bold))
         titulo.setStyleSheet(f"color: {COLORS['primary']};")
         layout.addWidget(titulo)
 
         # ── Proveedor ─────────────────────────────────────────────────────────
         lbl_prov = QLabel("Proveedor *")
-        lbl_prov.setFont(QFont("Segoe UI", 11, QFont.DemiBold))
+        lbl_prov.setFont(QFont(FONT_FAMILY, 11, QFont.DemiBold))
         layout.addWidget(lbl_prov)
 
         self.combo_prov = QComboBox()
@@ -419,7 +405,7 @@ class DialogoNuevoPedido(QDialog):
 
         # ── Fecha estimada de entrega ─────────────────────────────────────────
         lbl_fecha = QLabel("Fecha estimada de entrega *")
-        lbl_fecha.setFont(QFont("Segoe UI", 11, QFont.DemiBold))
+        lbl_fecha.setFont(QFont(FONT_FAMILY, 11, QFont.DemiBold))
         layout.addWidget(lbl_fecha)
 
         self.date_entrega = QDateEdit()
@@ -437,7 +423,7 @@ class DialogoNuevoPedido(QDialog):
 
         # ── Selector de productos ─────────────────────────────────────────────
         lbl_prod = QLabel("Agregar productos al pedido")
-        lbl_prod.setFont(QFont("Segoe UI", 11, QFont.DemiBold))
+        lbl_prod.setFont(QFont(FONT_FAMILY, 11, QFont.DemiBold))
         layout.addWidget(lbl_prod)
 
         add_row = QHBoxLayout()
@@ -489,7 +475,7 @@ class DialogoNuevoPedido(QDialog):
 
         # ── Notas opcionales ──────────────────────────────────────────────────
         lbl_notas = QLabel("Notas (opcional)")
-        lbl_notas.setFont(QFont("Segoe UI", 11, QFont.DemiBold))
+        lbl_notas.setFont(QFont(FONT_FAMILY, 11, QFont.DemiBold))
         layout.addWidget(lbl_notas)
 
         self.txt_notas = QTextEdit()
@@ -575,14 +561,7 @@ class DialogoNuevoPedido(QDialog):
 
             # Col 3: botón para eliminar este ítem de la lista
             btn_del = QPushButton("✕")
-            btn_del.setStyleSheet("""
-                QPushButton {
-                    background: #F8D7DA; color: #721C24;
-                    border: none; border-radius: 4px;
-                    font-size: 12px; padding: 2px 8px;
-                }
-                QPushButton:hover { background: #F5C6CB; }
-            """)
+            btn_del.setObjectName("btn_table_delete")
             btn_del.setCursor(Qt.PointingHandCursor)
             # Lambda con captura del índice actual
             btn_del.clicked.connect(lambda _, idx=i: self._eliminar_item(idx))
@@ -620,7 +599,7 @@ class DialogoNuevoPedido(QDialog):
         usuario = get_usuario_activo()
 
         # Llamamos al modelo para registrar el pedido
-        ok, msg, pid = registrar_pedido(
+        ok, msg, _ = registrar_pedido(
             proveedor_id=proveedor_id,
             usuario_id=usuario.id,
             fecha_estimada=fecha_estimada,

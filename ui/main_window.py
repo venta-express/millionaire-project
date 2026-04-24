@@ -1,125 +1,120 @@
 """
 AutoParts Express - Ventana Principal con Sidebar
-Sprint 2: Se agregan módulos Clientes, Compras y Usuarios al sidebar.
-          Los módulos visibles cambian según el rol del usuario autenticado.
+Sprint 3: Agrega módulos Reportes, Devoluciones y Promociones.
+          Acceso por módulo controlado por rol.
 
-Estructura:
-  - Sidebar: navegación lateral con ítems según rol
-  - QStackedWidget: área de contenido que muestra un módulo a la vez
-  - HomeView: dashboard de bienvenida con resumen de sprint
+Índices del QStackedWidget (deben coincidir con Sidebar):
+  0 → HomeView
+  1 → InventarioView
+  2 → VentasView
+  3 → ClientesView
+  4 → ComprasView
+  5 → UsuariosView
+  6 → ReportesView      ← NUEVO Sprint 3
+  7 → DevolucionesView  ← NUEVO Sprint 3
+  8 → PromocionesView   ← NUEVO Sprint 3
 """
 
-# Widgets de layout y contenedores
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QVBoxLayout,
-    QLabel, QPushButton, QFrame, QStackedWidget, QSizePolicy,
-    QSpacerItem
+    QLabel, QPushButton, QFrame, QStackedWidget
 )
+from PySide6.QtCore import Qt
+from PySide6.QtGui  import QFont, QColor, QPainter, QLinearGradient
 
-# Clases de comportamiento, tipografía y gráficos
-from PySide6.QtCore import Qt, QSize
-from PySide6.QtGui import QFont, QColor, QPainter, QLinearGradient, QIcon
-
-# Paleta de colores de la aplicación
 from utils.styles import COLORS
+from utils.constants import FONT_FAMILY, APP_NAME, LABEL_ATENCION
+from models.auth  import get_usuario_activo, cerrar_sesion
 
-# Modelo de autenticación para obtener el usuario activo y cerrar sesión
-from models.auth import get_usuario_activo, cerrar_sesion
+# ── Módulos Sprint 1 ──────────────────────────────────────────────────────────
+from ui.inventario  import InventarioView
+from ui.ventas      import VentasView
 
-# Módulos de UI del Sprint 1 (sin cambios)
-from ui.inventario import InventarioView
-from ui.ventas import VentasView
+# ── Módulos Sprint 2 ──────────────────────────────────────────────────────────
+from ui.clientes    import ClientesView
+from ui.compras     import ComprasView
+from ui.usuarios    import UsuariosView
 
-# Módulos de UI nuevos del Sprint 2
-from ui.clientes import ClientesView
-from ui.compras import ComprasView
-from ui.usuarios import UsuariosView
+# ── Módulos Sprint 3 ──────────────────────────────────────────────────────────
+from ui.reportes    import ReportesView
+from ui.devoluciones import DevolucionesView
+from ui.promociones import PromocionesView
 
 
-# ── Ítem de navegación en sidebar ─────────────────────────────────────────────
+# ── Ítem de navegación ────────────────────────────────────────────────────────
 class NavItem(QPushButton):
     """
     Botón de navegación del sidebar.
-    Es checkable (puede estar activo/inactivo) y muestra ícono + etiqueta.
+    Checkable para marcar el módulo activo visualmente.
     """
-
     def __init__(self, icon: str, label: str):
         super().__init__()
-        self.setObjectName("btn_nav")   # ID para los estilos del APP_STYLE
+        self.setObjectName("btn_nav")
         self.setText(f"  {icon}  {label}")
         self.setFixedHeight(48)
-        self.setCursor(Qt.PointingHandCursor)  # Cursor de mano al pasar el mouse
-        self.setFont(QFont("Segoe UI", 13))
-        self.setCheckable(True)  # Permite marcar el ítem activo visualmente
+        self.setCursor(Qt.PointingHandCursor)
+        self.setFont(QFont(FONT_FAMILY, 13))
+        self.setCheckable(True)
 
 
 # ── Sidebar ────────────────────────────────────────────────────────────────────
 class Sidebar(QWidget):
     """
-    Barra lateral de navegación.
-    Muestra solo los módulos a los que el usuario tiene acceso según su rol:
-      - Gerencia:   Inicio, Inventario, Ventas, Clientes, Compras, Usuarios
-      - Vendedor:   Inicio, Ventas, Clientes
-      - Inventario: Inicio, Inventario, Compras
+    Barra lateral de navegación con ítems filtrados por rol.
+
+    Módulos visibles por rol:
+      Gerencia:   todos (Inicio, Inventario, Ventas, Clientes, Compras,
+                         Usuarios, Reportes, Devoluciones, Promociones)
+      Vendedor:   Inicio, Ventas, Clientes, Promociones (solo ver)
+      Inventario: Inicio, Inventario, Compras, Devoluciones
     """
 
     def __init__(self, on_navigate, on_logout):
-        """
-        Parámetros:
-            on_navigate: callback(index: int) que cambia el módulo visible
-            on_logout:   callback() que cierra sesión y vuelve al login
-        """
         super().__init__()
         self.setObjectName("sidebar")
-        self.setFixedWidth(230)                              # Ancho fijo del sidebar
-        self.setAttribute(Qt.WA_StyledBackground, False)    # Fondo manejado en paintEvent
+        self.setFixedWidth(230)
+        self.setAttribute(Qt.WA_StyledBackground, False)
         self.setStyleSheet("Sidebar { background: transparent; }")
-
-        self._nav_items: list[NavItem] = []   # Lista de ítems de navegación activos
-        self._on_navigate = on_navigate        # Callback de navegación
-
-        self._setup_ui(on_logout)  # Construimos la interfaz
+        self._nav_items: list[NavItem] = []
+        self._on_navigate = on_navigate
+        self._setup_ui(on_logout)
 
     def _setup_ui(self, on_logout):
-        """Construye el contenido del sidebar según el rol del usuario."""
+        """Construye la barra lateral con ítems según el rol activo."""
         layout = QVBoxLayout(self)
         layout.setContentsMargins(14, 24, 14, 20)
         layout.setSpacing(0)
 
-        # ── Logo ────────────────────────────────────────────────────────────
+        # ── Logo ──────────────────────────────────────────────────────────────
         logo = QLabel("⚙  AutoParts")
-        logo.setFont(QFont("Segoe UI", 15, QFont.Bold))
+        logo.setFont(QFont(FONT_FAMILY, 15, QFont.Bold))
         logo.setStyleSheet("color: white; letter-spacing: 1px;")
         logo.setContentsMargins(10, 0, 0, 0)
         layout.addWidget(logo)
 
         express = QLabel("    Express")
-        express.setFont(QFont("Segoe UI", 15, QFont.Bold))
+        express.setFont(QFont(FONT_FAMILY, 15, QFont.Bold))
         express.setStyleSheet(f"color: {COLORS['accent']}; letter-spacing: 1px;")
         layout.addWidget(express)
 
         layout.addSpacing(8)
-
-        # Separador decorativo después del logo
         sep = QFrame()
         sep.setFixedHeight(1)
         sep.setStyleSheet("background: rgba(255,255,255,0.12);")
         layout.addWidget(sep)
         layout.addSpacing(16)
 
-        # ── Info del usuario logueado ────────────────────────────────────────
+        # ── Info del usuario ──────────────────────────────────────────────────
         usuario = get_usuario_activo()
         if usuario:
-            # Nombre del usuario en blanco
             uname = QLabel(usuario.nombre)
-            uname.setFont(QFont("Segoe UI", 12, QFont.DemiBold))
+            uname.setFont(QFont(FONT_FAMILY, 12, QFont.DemiBold))
             uname.setStyleSheet("color: white;")
             uname.setContentsMargins(10, 0, 0, 0)
             uname.setWordWrap(True)
 
-            # Badge con el nombre del rol en color acento
             rol_badge = QLabel(usuario.rol)
-            rol_badge.setFont(QFont("Segoe UI", 10))
+            rol_badge.setFont(QFont(FONT_FAMILY, 10))
             rol_badge.setStyleSheet(
                 f"color: {COLORS['accent']}; background: rgba(255,107,43,0.15);"
                 "border-radius: 4px; padding: 2px 10px; margin-left: 10px;"
@@ -130,77 +125,41 @@ class Sidebar(QWidget):
 
         # ── Etiqueta de sección ───────────────────────────────────────────────
         nav_label = QLabel("MÓDULOS")
-        nav_label.setFont(QFont("Segoe UI", 9, QFont.Bold))
-        nav_label.setStyleSheet("color: rgba(255,255,255,0.35); letter-spacing: 1.5px;")
+        nav_label.setFont(QFont(FONT_FAMILY, 9, QFont.Bold))
+        nav_label.setStyleSheet(
+            "color: rgba(255,255,255,0.35); letter-spacing: 1.5px;"
+        )
         nav_label.setContentsMargins(12, 0, 0, 0)
         layout.addWidget(nav_label)
         layout.addSpacing(6)
 
-        # ── Definición de módulos según rol ──────────────────────────────────
-        # Formato: (icono, etiqueta, índice en el QStackedWidget)
-        # El índice coincide con el orden en que se agregan los widgets al stack
-        # en MainWindow._setup_ui()
-        todos_los_menus = [
+        # ── Definición de módulos con permisos por rol ────────────────────────
+        # Formato: (icono, label, stack_index, roles_permitidos)
+        MODULOS = [
             ("🏠", "Inicio",       0, ["Gerencia", "Vendedor", "Inventario"]),
             ("📦", "Inventario",   1, ["Gerencia", "Inventario"]),
             ("🧾", "Ventas",       2, ["Gerencia", "Vendedor"]),
             ("👥", "Clientes",     3, ["Gerencia", "Vendedor"]),
             ("🛒", "Compras",      4, ["Gerencia", "Inventario"]),
-            ("🔐", "Usuarios",     5, ["Gerencia"]),               # Solo Gerencia
+            ("🔐", "Usuarios",     5, ["Gerencia"]),
+            ("📊", "Reportes",     6, ["Gerencia"]),
+            ("↩", "Devoluciones", 7, ["Gerencia", "Inventario"]),
+            ("🏷️", "Promociones",  8, ["Gerencia", "Vendedor"]),
         ]
 
-        # Filtramos los módulos según el rol del usuario activo
         rol_actual = usuario.rol if usuario else ""
-        menus_visibles = [
-            (icon, label, idx)
-            for icon, label, idx, roles in todos_los_menus
-            if rol_actual in roles
-        ]
 
-        # Creamos un NavItem por cada módulo visible
-        for icon, label, idx in menus_visibles:
+        for icon, label, idx, roles in MODULOS:
+            if rol_actual not in roles:
+                continue  # El usuario no tiene acceso a este módulo
             item = NavItem(icon, label)
-            # Usamos valores por defecto en el lambda para evitar el closure problem
             item.clicked.connect(lambda _, i=idx, btn=item: self._select(i, btn))
             self._nav_items.append(item)
             layout.addWidget(item)
 
-        layout.addSpacing(10)
+        layout.addStretch()
 
-        # Separador antes de "Próximos Sprints"
-        sep2 = QFrame()
-        sep2.setFixedHeight(1)
-        sep2.setStyleSheet("background: rgba(255,255,255,0.08);")
-        layout.addWidget(sep2)
-        layout.addSpacing(6)
-
-        # Etiqueta para módulos futuros
-        coming = QLabel("PRÓXIMOS SPRINTS")
-        coming.setFont(QFont("Segoe UI", 9, QFont.Bold))
-        coming.setStyleSheet("color: rgba(255,255,255,0.25); letter-spacing: 1.5px;")
-        coming.setContentsMargins(12, 0, 0, 0)
-        layout.addWidget(coming)
-        layout.addSpacing(6)
-
-        # Módulos del Sprint 3 (deshabilitados visualmente)
-        sprint3 = [
-            ("📊", "Reportes"),
-        ]
-        for icon, label in sprint3:
-            btn = QPushButton(f"  {icon}  {label}")
-            btn.setObjectName("btn_nav")
-            btn.setFixedHeight(44)
-            btn.setEnabled(False)  # No clickeable
-            btn.setFont(QFont("Segoe UI", 13))
-            btn.setStyleSheet(
-                "QPushButton { color: rgba(255,255,255,0.2); background: transparent;"
-                "border: none; text-align: left; padding: 0 8px; border-radius: 8px; }"
-            )
-            layout.addWidget(btn)
-
-        layout.addStretch()  # Empuja el botón de logout hacia abajo
-
-        # ── Botón de cerrar sesión ────────────────────────────────────────────
+        # ── Cerrar sesión ─────────────────────────────────────────────────────
         sep3 = QFrame()
         sep3.setFixedHeight(1)
         sep3.setStyleSheet("background: rgba(255,255,255,0.1);")
@@ -210,7 +169,7 @@ class Sidebar(QWidget):
         btn_logout = QPushButton("  ⎋  Cerrar sesión")
         btn_logout.setObjectName("btn_nav")
         btn_logout.setFixedHeight(44)
-        btn_logout.setFont(QFont("Segoe UI", 12))
+        btn_logout.setFont(QFont(FONT_FAMILY, 12))
         btn_logout.setStyleSheet(
             "QPushButton { color: rgba(255,107,43,0.8); background: transparent;"
             "border: none; text-align: left; padding: 0 8px; border-radius: 8px; }"
@@ -220,55 +179,37 @@ class Sidebar(QWidget):
         btn_logout.clicked.connect(on_logout)
         layout.addWidget(btn_logout)
 
-        # Seleccionamos "Inicio" como módulo activo por defecto al iniciar
+        # Seleccionamos Inicio por defecto
         if self._nav_items:
             self._select(0, self._nav_items[0])
 
     def _select(self, idx: int, btn: NavItem):
-        """
-        Actualiza el estado visual de los ítems de navegación y
-        llama al callback para cambiar el módulo visible en el stack.
-        """
-        # Desactivamos todos los ítems
+        """Actualiza el estado visual y navega al módulo."""
         for item in self._nav_items:
             item.setChecked(False)
             item.setProperty("active", "false")
-            item.style().unpolish(item)  # Forzamos re-aplicación de estilos
+            item.style().unpolish(item)
             item.style().polish(item)
 
-        # Activamos el ítem seleccionado
         btn.setChecked(True)
         btn.setProperty("active", "true")
         btn.style().unpolish(btn)
         btn.style().polish(btn)
-
-        # Notificamos al MainWindow para cambiar el widget visible
         self._on_navigate(idx)
 
     def paintEvent(self, event):
-        """
-        Renderizamos el fondo degradado del sidebar manualmente.
-        Usamos QPainter en lugar de stylesheets para el degradado
-        ya que QSS no soporta gradientes en paintEvent implícito.
-        """
+        """Fondo degradado del sidebar pintado con QPainter."""
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
-
-        # Degradado vertical de azul oscuro a casi negro
         grad = QLinearGradient(0, 0, 0, self.height())
-        grad.setColorAt(0.0, QColor("#1A2942"))  # Azul marino arriba
-        grad.setColorAt(1.0, QColor("#0D1B2E"))  # Casi negro abajo
-
+        grad.setColorAt(0.0, QColor("#1A2942"))
+        grad.setColorAt(1.0, QColor("#0D1B2E"))
         painter.fillRect(self.rect(), grad)
-        # No llamamos a super() para evitar que el fondo blanco del stylesheet pise el degradado
 
 
-# ── Vista de Inicio (Dashboard) ────────────────────────────────────────────────
+# ── Dashboard de bienvenida ────────────────────────────────────────────────────
 class HomeView(QWidget):
-    """
-    Vista de bienvenida que muestra tarjetas de los módulos disponibles
-    y el listado de historias de usuario completadas en cada sprint.
-    """
+    """Vista de inicio con tarjetas de módulos y resumen de HU completadas."""
 
     def __init__(self):
         super().__init__()
@@ -278,18 +219,15 @@ class HomeView(QWidget):
         layout.setSpacing(20)
         layout.setAlignment(Qt.AlignTop)
 
-        # Obtenemos el nombre del usuario para el saludo personalizado
         usuario = get_usuario_activo()
-        nombre = usuario.nombre if usuario else "Usuario"
+        nombre  = usuario.nombre if usuario else "Usuario"
 
-        # Saludo principal
         greeting = QLabel(f"¡Hola, {nombre}! 👋")
-        greeting.setFont(QFont("Segoe UI", 26, QFont.Bold))
+        greeting.setFont(QFont(FONT_FAMILY, 26, QFont.Bold))
         greeting.setStyleSheet(f"color: {COLORS['primary']};")
 
-        # Subtítulo con versión del sprint
-        sub = QLabel("Sistema de Gestión AutoParts Express · Sprint 2")
-        sub.setFont(QFont("Segoe UI", 13))
+        sub = QLabel("Sistema de Gestión AutoParts Express · Sprint 3")
+        sub.setFont(QFont(FONT_FAMILY, 13))
         sub.setStyleSheet(f"color: {COLORS['muted']};")
 
         layout.addWidget(greeting)
@@ -298,73 +236,74 @@ class HomeView(QWidget):
 
         # ── Tarjetas de módulos ───────────────────────────────────────────────
         cards_row = QHBoxLayout()
-        cards_row.setSpacing(16)
+        cards_row.setSpacing(12)
 
         def stat_card(icon, title, subtitle, color):
-            """Helper que crea una tarjeta de módulo con ícono y texto."""
             card = QFrame()
             card.setObjectName("card")
-            card.setFixedHeight(120)
+            card.setFixedHeight(110)
             cl = QHBoxLayout(card)
-            cl.setContentsMargins(20, 20, 20, 20)
-
-            # Ícono con fondo semitransparente del color del módulo
+            cl.setContentsMargins(18, 16, 18, 16)
             icon_lbl = QLabel(icon)
-            icon_lbl.setFont(QFont("Segoe UI", 28))
+            icon_lbl.setFont(QFont(FONT_FAMILY, 26))
             icon_lbl.setStyleSheet(
-                f"background: {color}22; border-radius: 12px;"
-                f"padding: 8px; color: {color};"
+                f"background: {color}22; border-radius: 10px;"
+                f"padding: 6px; color: {color};"
             )
-            icon_lbl.setFixedSize(60, 60)
+            icon_lbl.setFixedSize(54, 54)
             icon_lbl.setAlignment(Qt.AlignCenter)
-
-            # Texto: título grande + subtítulo
             text_col = QVBoxLayout()
-            text_col.setSpacing(3)
+            text_col.setSpacing(2)
             t = QLabel(title)
-            t.setFont(QFont("Segoe UI", 16, QFont.Bold))
+            t.setFont(QFont(FONT_FAMILY, 14, QFont.Bold))
             t.setStyleSheet(f"color: {COLORS['primary']};")
             s = QLabel(subtitle)
-            s.setFont(QFont("Segoe UI", 11))
+            s.setFont(QFont(FONT_FAMILY, 10))
             s.setStyleSheet(f"color: {COLORS['muted']};")
             text_col.addWidget(t)
             text_col.addWidget(s)
-
             cl.addWidget(icon_lbl)
-            cl.addSpacing(14)
+            cl.addSpacing(12)
             cl.addLayout(text_col)
             cl.addStretch()
             return card
 
-        # Tarjetas de los 5 módulos activos en Sprint 2
-        cards_row.addWidget(stat_card("📦", "Inventario", "Gestión de productos",      COLORS["primary"]))
-        cards_row.addWidget(stat_card("🧾", "Ventas",     "Registro y facturación",    COLORS["accent"]))
-        cards_row.addWidget(stat_card("👥", "Clientes",   "Historial de compras",      COLORS["success"]))
-        cards_row.addWidget(stat_card("🛒", "Compras",    "Pedidos a proveedores",     "#8E44AD"))
-        cards_row.addWidget(stat_card("🔐", "Usuarios",   "Gestión de accesos",        "#E74C3C"))
+        # Fila 1 de tarjetas
+        for icon, title, sub_t, color in [
+            ("📦", "Inventario",  "Productos y stock",   COLORS["primary"]),
+            ("🧾", "Ventas",      "Facturación",         COLORS["accent"]),
+            ("👥", "Clientes",    "Historial",           COLORS["success"]),
+            ("🛒", "Compras",     "Pedidos",             "#8E44AD"),
+        ]:
+            cards_row.addWidget(stat_card(icon, title, sub_t, color))
         layout.addLayout(cards_row)
 
-        # ── Historias de usuario completadas ──────────────────────────────────
-        sprint_lbl = QLabel("Sprint 2 — Historias de usuario completadas:")
-        sprint_lbl.setFont(QFont("Segoe UI", 13, QFont.DemiBold))
+        cards_row2 = QHBoxLayout()
+        cards_row2.setSpacing(12)
+        for icon, title, sub_t, color in [
+            ("📊", "Reportes",     "Análisis y exportación", "#2980B9"),
+            ("↩", "Devoluciones", "A proveedores",           COLORS["warning"]),
+            ("🏷️", "Promociones",  "Descuentos activos",      "#16A085"),
+            ("🔐", "Usuarios",    "Control de acceso",       COLORS["danger"]),
+        ]:
+            cards_row2.addWidget(stat_card(icon, title, sub_t, color))
+        layout.addLayout(cards_row2)
+
+        # ── HU completadas ────────────────────────────────────────────────────
+        sprint_lbl = QLabel("Sprint 3 — Historias completadas:")
+        sprint_lbl.setFont(QFont(FONT_FAMILY, 13, QFont.DemiBold))
         sprint_lbl.setStyleSheet(f"color: {COLORS['text']};")
         layout.addWidget(sprint_lbl)
 
-        # Lista de HU del Sprint 2 con sus descripciones
         hus = [
-            ("✅", "HU-05", "Alertas automáticas de stock mínimo"),
-            ("✅", "HU-06", "Gestión de pedidos a proveedores"),
-            ("✅", "HU-07", "Historial de compras de clientes"),
-            ("✅", "HU-08", "Gestión de usuarios y roles (solo Gerencia)"),
-            # HU del Sprint 1 (mantenidas)
-            ("✅", "HU-01", "Inicio de sesión seguro con roles"),
-            ("✅", "HU-02", "Registro y gestión de productos en inventario"),
-            ("✅", "HU-03", "Búsqueda y filtrado en tiempo real"),
-            ("✅", "HU-04", "Registro de ventas y emisión de facturas"),
+            ("✅", "HU-09", "Reportes de ventas e inventario exportables a PDF/Excel"),
+            ("✅", "HU-10", "Reporte de ventas por vendedor con filtro de período"),
+            ("✅", "HU-11", "Devoluciones a proveedores con actualización de stock"),
+            ("✅", "HU-12", "Configuración de promociones y descuentos automáticos"),
         ]
         for check, code, desc in hus:
             row = QLabel(f"{check}  <b>{code}</b> — {desc}")
-            row.setFont(QFont("Segoe UI", 12))
+            row.setFont(QFont(FONT_FAMILY, 12))
             row.setStyleSheet(f"color: {COLORS['text']}; margin-left: 8px;")
             row.setTextFormat(Qt.RichText)
             layout.addWidget(row)
@@ -373,70 +312,48 @@ class HomeView(QWidget):
 # ── Ventana Principal ──────────────────────────────────────────────────────────
 class MainWindow(QMainWindow):
     """
-    Ventana principal de la aplicación.
-    Combina el Sidebar de navegación con el QStackedWidget de módulos.
-    El índice del stack debe coincidir con los índices definidos en Sidebar.
+    Ventana principal: sidebar + QStackedWidget con todos los módulos.
+    Los índices del stack son fijos y deben coincidir con MODULOS en Sidebar.
     """
 
     def __init__(self, on_logout):
-        """
-        Parámetros:
-            on_logout: callback() llamado al cerrar sesión; regresa al login
-        """
         super().__init__()
-        self._on_logout_cb = on_logout  # Guardamos el callback de logout
-        self.setWindowTitle("AutoParts Express · Sistema de Gestión · Sprint 2")
-        self.setMinimumSize(1200, 720)
+        self._on_logout_cb = on_logout
+        self.setWindowTitle("AutoParts Express · Sprint 3")
+        self.setMinimumSize(1280, 720)
         self._setup_ui()
 
     def _setup_ui(self):
-        """
-        Construye el layout principal: sidebar a la izquierda,
-        QStackedWidget con todos los módulos a la derecha.
-        El orden de addWidget al stack define los índices de navegación.
-        """
+        """Construye sidebar + stack con todos los módulos."""
         central = QWidget()
         self.setCentralWidget(central)
-
         layout = QHBoxLayout(central)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
 
-        # ── QStackedWidget: un widget por módulo ─────────────────────────────
+        # ── QStackedWidget (índices fijos, ver docstring de clase) ────────────
         self.stack = QStackedWidget()
 
-        # Índice 0: Dashboard de bienvenida
-        self.stack.addWidget(HomeView())
-
-        # Índice 1: Módulo de Inventario (Sprint 1)
-        self.stack.addWidget(InventarioView())
-
-        # Índice 2: Módulo de Ventas (Sprint 1)
-        self.stack.addWidget(VentasView())
-
-        # Índice 3: Módulo de Clientes (Sprint 2 - nuevo)
-        self.stack.addWidget(ClientesView())
-
-        # Índice 4: Módulo de Compras (Sprint 2 - nuevo)
-        self.stack.addWidget(ComprasView())
-
-        # Índice 5: Módulo de Usuarios (Sprint 2 - nuevo, solo Gerencia)
-        self.stack.addWidget(UsuariosView())
+        self.stack.addWidget(HomeView())          # 0
+        self.stack.addWidget(InventarioView())    # 1
+        self.stack.addWidget(VentasView())        # 2
+        self.stack.addWidget(ClientesView())      # 3
+        self.stack.addWidget(ComprasView())       # 4
+        self.stack.addWidget(UsuariosView())      # 5
+        self.stack.addWidget(ReportesView())      # 6 ← NUEVO
+        self.stack.addWidget(DevolucionesView())  # 7 ← NUEVO
+        self.stack.addWidget(PromocionesView())   # 8 ← NUEVO
 
         # ── Sidebar ────────────────────────────────────────────────────────
         sidebar = Sidebar(
-            on_navigate=self.stack.setCurrentIndex,  # Cambia el módulo visible
+            on_navigate=self.stack.setCurrentIndex,
             on_logout=self._handle_logout
         )
 
-        # Sidebar fijo a la izquierda, stack ocupa el resto (factor 1)
         layout.addWidget(sidebar)
         layout.addWidget(self.stack, 1)
 
     def _handle_logout(self):
-        """
-        Limpia la sesión activa y llama al callback de logout.
-        El callback (definido en main.py) cierra esta ventana y muestra el login.
-        """
-        cerrar_sesion()          # Limpiamos _sesion_activa en el modelo
-        self._on_logout_cb()     # Notificamos a App para redirigir al login
+        """Limpia sesión y regresa al login."""
+        cerrar_sesion()
+        self._on_logout_cb()

@@ -10,6 +10,7 @@ from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QPoint
 from PySide6.QtGui import QFont, QColor, QPainter, QLinearGradient, QPixmap, QPen
 
 from utils.styles import COLORS
+from utils.constants import FONT_FAMILY, APP_NAME, LABEL_ATENCION
 from models.auth import iniciar_sesion
 
 
@@ -121,7 +122,7 @@ class FormField(QWidget):
         layout.setSpacing(6)
 
         lbl = QLabel(label)
-        lbl.setFont(QFont("Segoe UI", 11, QFont.DemiBold))
+        lbl.setFont(QFont(FONT_FAMILY, 11, QFont.DemiBold))
         lbl.setStyleSheet(f"color: {COLORS['text']}; letter-spacing: 0.3px;")
 
         self.input = QLineEdit()
@@ -173,11 +174,11 @@ class LoginForm(QWidget):
 
         # Título
         title = QLabel("Bienvenido")
-        title.setFont(QFont("Segoe UI", 26, QFont.Bold))
+        title.setFont(QFont(FONT_FAMILY, 26, QFont.Bold))
         title.setStyleSheet(f"color: {COLORS['primary']};")
 
         subtitle = QLabel("Inicia sesión para continuar")
-        subtitle.setFont(QFont("Segoe UI", 13))
+        subtitle.setFont(QFont(FONT_FAMILY, 13))
         subtitle.setStyleSheet(f"color: {COLORS['muted']};")
         subtitle.setContentsMargins(0, 4, 0, 0)
 
@@ -209,7 +210,7 @@ class LoginForm(QWidget):
         self.btn_login = QPushButton("Iniciar sesión")
         self.btn_login.setObjectName("btn_primary")
         self.btn_login.setFixedHeight(48)
-        self.btn_login.setFont(QFont("Segoe UI", 14, QFont.DemiBold))
+        self.btn_login.setFont(QFont(FONT_FAMILY, 14, QFont.DemiBold))
         self.btn_login.setCursor(Qt.PointingHandCursor)
         self.btn_login.clicked.connect(self._do_login)
         layout.addWidget(self.btn_login)
@@ -218,7 +219,7 @@ class LoginForm(QWidget):
 
         # Credenciales de demo
         hint = QLabel("Demo → usuario: <b>admin</b> · contraseña: <b>admin123</b>")
-        hint.setFont(QFont("Segoe UI", 11))
+        hint.setFont(QFont(FONT_FAMILY, 11))
         hint.setStyleSheet(f"color: {COLORS['muted']}; padding: 10px 14px; "
                            "background: #F4F6FA; border-radius: 8px;")
         hint.setAlignment(Qt.AlignCenter)
