@@ -1,51 +1,50 @@
-# AutoParts Express — Sistema de Gestión
-## Sprint 1: Seguridad + Inventario + Ventas
+# AutoParts Express — Sprint 2
 
-### Tecnologías
-- **Frontend**: PySide6 (Qt6)
-- **Backend lógica**: Python 3.11+
-- **Base de datos**: PostgreSQL
+## Módulos incluidos
 
----
+| Sprint | HU | Módulo | Descripción |
+|--------|----|--------|-------------|
+| 1 | HU-01 | Seguridad | Inicio de sesión con roles y bloqueo por intentos |
+| 1 | HU-02 | Inventario | Registro y gestión de productos |
+| 1 | HU-03 | Inventario | Búsqueda y filtrado en tiempo real |
+| 1 | HU-04 | Ventas | Registro de ventas y emisión de facturas |
+| **2** | **HU-05** | **Inventario** | **Alertas automáticas de stock mínimo** |
+| **2** | **HU-06** | **Compras** | **Gestión de pedidos a proveedores** |
+| **2** | **HU-07** | **Clientes** | **Historial de compras por cliente** |
+| **2** | **HU-08** | **Usuarios** | **Gestión de usuarios y roles (solo Gerencia)** |
 
-## Estructura del Proyecto
+## Estructura de carpetas
 
 ```
 autoparts/
 ├── main.py                  # Punto de entrada
 ├── requirements.txt
 ├── db/
-│   ├── connection.py        # Conexión PostgreSQL
-│   └── schema.sql           # Tablas + datos base
+│   ├── connection.py        # Gestor de conexión PostgreSQL
+│   └── schema.sql           # Esquema completo Sprint 1 + Sprint 2
 ├── models/
-│   ├── auth.py              # HU-01: Login / sesión / usuarios
-│   ├── inventario.py        # HU-02 + HU-03: Productos
-│   └── ventas.py            # HU-04: Ventas / facturas / clientes
+│   ├── auth.py              # Autenticación + CRUD usuarios (HU-08)
+│   ├── inventario.py        # CRUD productos + alertas stock (HU-05)
+│   ├── ventas.py            # Ventas + historial clientes (HU-07)
+│   └── compras.py           # Proveedores + pedidos (HU-06)  ← NUEVO
 ├── ui/
-│   ├── login.py             # HU-01: Pantalla de login
-│   ├── inventario.py        # HU-02 + HU-03: Vista de inventario
-│   ├── ventas.py            # HU-04: Vista de ventas
-│   └── main_window.py       # Ventana principal + sidebar
+│   ├── login.py             # Pantalla de login
+│   ├── main_window.py       # Ventana principal + sidebar con roles
+│   ├── inventario.py        # Vista de inventario
+│   ├── ventas.py            # Vista de ventas
+│   ├── clientes.py          # Vista de clientes ← NUEVO
+│   ├── compras.py           # Vista de compras  ← NUEVO
+│   └── usuarios.py          # Vista de usuarios ← NUEVO
 └── utils/
-    └── styles.py            # Estilos globales (paleta + QSS)
+    └── styles.py            # Estilos y paleta de colores
 ```
 
----
+## Configuración
 
-## Configuración e Instalación
+### 1. Base de datos
 
-### 1. Instalar dependencias Python
-```bash
-pip install -r requirements.txt
-```
+Edita `db/connection.py` con tus credenciales de PostgreSQL:
 
-### 2. Crear la base de datos en PostgreSQL
-```sql
-CREATE DATABASE autoparts_db;
-```
-
-### 3. Configurar credenciales de BD
-Edita `db/connection.py` y ajusta:
 ```python
 DB_CONFIG = {
     "host":     "localhost",
@@ -56,64 +55,48 @@ DB_CONFIG = {
 }
 ```
 
-### 4. Inicializar el esquema
+### 2. Inicializar el esquema
+
+Ejecuta el SQL en pgAdmin o psql para crear las tablas nuevas del Sprint 2
+(proveedores, pedidos, pedido_detalles, alertas_stock):
+
 ```bash
-cd autoparts
-python -c "from db.connection import init_db; init_db()"
+psql -U postgres -d autoparts_db -f db/schema.sql
 ```
 
-### 5. Ejecutar la aplicación
+O desde Python:
+
+```python
+from db.connection import init_db
+init_db()
+```
+
+### 3. Instalar dependencias
+
 ```bash
+pip install -r requirements.txt
+```
+
+### 4. Ejecutar
+
+```bash
+cd autoparts/
 python main.py
 ```
 
----
-
 ## Credenciales por defecto
 
-| Campo    | Valor      |
-|----------|------------|
-| Usuario  | `admin`    |
-| Contraseña | `admin123` |
-| Rol      | Gerencia   |
+| Usuario | Contraseña | Rol |
+|---------|-----------|-----|
+| admin | admin123 | Gerencia |
 
----
+## Permisos por rol
 
-## Historias de Usuario — Sprint 1
-
-### HU-01 · Inicio de Sesión ✅
-- Pantalla dividida: panel de marca (izq) + formulario (der)
-- Validación de credenciales con bcrypt
-- Bloqueo automático tras 3 intentos fallidos
-- Redirección según rol del usuario
-- Animación de sacudida en credenciales incorrectas
-
-### HU-02 · Registro de Productos ✅
-- Formulario completo: código, nombre, categoría, precio, stock inicial, stock mínimo
-- Validación de duplicados por código
-- Alertas visuales de stock bajo directamente en la tabla
-
-### HU-03 · Búsqueda y Filtrado ✅
-- Búsqueda en tiempo real (debounce 300 ms → garantiza < 2 seg)
-- Filtro por nombre, código y categoría simultáneamente
-- Badges de estado: OK / Stock bajo / Sin stock
-- Acciones de editar y eliminar por fila
-
-### HU-04 · Registro de Venta y Emisión de Factura ✅
-- Panel de dos columnas: catálogo de productos + carrito
-- Agregar/quitar ítems, ajustar cantidades
-- Validación de stock en tiempo real
-- Registro del cliente (buscar por cédula o crear nuevo)
-- Métodos de pago: Efectivo / Transferencia (con referencia)
-- Factura generada con: número, fecha, vendedor, cliente, ítems, subtotales, total
-- Descuento de stock automático al confirmar venta
-
----
-
-## Próximos Sprints
-
-| Sprint | Módulos |
-|--------|---------|
-| Sprint 2 | Alertas stock mínimo, Pedidos a proveedores, Historial clientes, Gestión usuarios/roles |
-| Sprint 3 | Reportes exportables (PDF/Excel), Devoluciones, Promociones |
-| Sprint 4 | Integración, pruebas, ajustes finales |
+| Módulo | Gerencia | Vendedor | Inventario |
+|--------|----------|----------|------------|
+| Inicio | ✅ | ✅ | ✅ |
+| Inventario | ✅ | ❌ | ✅ |
+| Ventas | ✅ | ✅ | ❌ |
+| Clientes | ✅ | ✅ | ❌ |
+| Compras | ✅ | ❌ | ✅ |
+| Usuarios | ✅ | ❌ | ❌ |
