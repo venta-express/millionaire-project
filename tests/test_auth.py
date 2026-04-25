@@ -231,7 +231,7 @@ def test_editar_usuario_nueva_clave():
     cur, ctx = _make_ctx()
     cur.fetchone.return_value = {"id": 2}
     with patch("models.auth.db_cursor", ctx):
-        ok, _ = editar_usuario(1, "Nombre", "Vendedor", True, nueva_password="clave_nueva_ok")
+        ok, _ = editar_usuario(1, "Nombre", "Vendedor", True, nuevo_secreto="clave_nueva_ok")
         assert ok is True
 
 
@@ -276,6 +276,7 @@ def test_listar_roles_mock():
         roles = listar_roles()
         assert isinstance(roles, list)
         assert "Gerencia" in roles
+
 
 
 

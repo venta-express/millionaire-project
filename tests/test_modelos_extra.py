@@ -153,7 +153,7 @@ def test_editar_usuario_nueva_clave():
     cur.fetchone.return_value = {"id": 2}
     with patch("models.auth.db_cursor", ctx):
         from models.auth import editar_usuario
-        ok, _ = editar_usuario(1, "Nombre", "Vendedor", True, nueva_password="nueva_clave_ok")
+        ok, _ = editar_usuario(1, "Nombre", "Vendedor", True, nuevo_secreto="nueva_clave_ok")
         assert ok is True
 
 
@@ -291,5 +291,6 @@ def test_obtener_o_crear_cliente_existente():
         ok, _, cid = obtener_o_crear_cliente("123456789", "Juan")
         assert ok is True
         assert cid == 1
+
 
 
