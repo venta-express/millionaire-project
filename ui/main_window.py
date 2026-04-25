@@ -36,6 +36,9 @@ from ui.reportes     import ReportesView
 from ui.devoluciones import DevolucionesView
 from ui.promociones  import PromocionesView
 from ui.auditoria    import AuditoriaWidget
+
+# Constante para evitar literales duplicados (SonarCloud)
+SPRINT_ACTUAL = "Sprint 4"
 from ui.configuracion import ConfiguracionWidget
 
 
@@ -258,11 +261,11 @@ class HomeView(QWidget):
         layout.addWidget(sprint_lbl)
 
         hus = [
-            ("OK", "Sprint 4", "Integracion completa con base de datos PostgreSQL"),
-            ("OK", "Sprint 4", "Panel de auditoria de acciones del sistema"),
-            ("OK", "Sprint 4", "Configuracion global de la empresa y prefijos"),
-            ("OK", "Sprint 4", "Backup de base de datos desde la interfaz"),
-            ("OK", "Sprint 4", "Schema acumulativo Sprint 1+2+3+4 sin errores de encoding"),
+            ("OK", SPRINT_ACTUAL, "Integracion completa con base de datos PostgreSQL"),
+            ("OK", SPRINT_ACTUAL, "Panel de auditoria de acciones del sistema"),
+            ("OK", SPRINT_ACTUAL, "Configuracion global de la empresa y prefijos"),
+            ("OK", SPRINT_ACTUAL, "Backup de base de datos desde la interfaz"),
+            ("OK", SPRINT_ACTUAL, "Schema acumulativo Sprint 1+2+3+4 sin errores de encoding"),
         ]
         for check, code, desc in hus:
             row = QLabel(f"{check}  {code} - {desc}")

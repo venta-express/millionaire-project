@@ -120,42 +120,44 @@ class AuditoriaWidget(QWidget):
         self._datos = datos
         self._filtrar()
 
+    def _texto_coincide(self, d: dict, texto: str) -> bool:
+        """Verifica si un registro coincide con el texto de busqueda."""
+        return (
+            texto in (d.get("usuario") or "").lower()
+            or texto in (d.get("accion") or "").lower()
+            or texto in (d.get("detalle") or "").lower()
+        )
+
+    def _formato_fecha(self, fecha) -> str:
+        """Formatea una fecha para mostrar en la tabla."""
+        if hasattr(fecha, "strftime"):
+            return fecha.strftime("%Y-%m-%d %H:%M:%S")
+        return str(fecha)
+
+    def _llenar_fila(self, row: int, d: dict) -> None:
+        """Rellena una fila de la tabla con los datos de un registro."""
+        modulo = d.get("modulo", "")
+        color = COLORES_MODULO.get(modulo, "#7F8C8D")
+        items = [
+            self._formato_fecha(d["fecha_hora"]),
+            d.get("username") or d.get("usuario") or "—",
+            modulo,
+            d.get("accion", ""),
+            (d.get("detalle") or "")[:120],
+            d.get("ip") or "—",
+        ]
+        for col, val in enumerate(items):
+            item = QTableWidgetItem(str(val))
+            if col == 2:
+                item.setForeground(QColor(color))
+            self.tabla.setItem(row, col, item)
+
     def _filtrar(self):
         texto = self.txt_buscar.text().lower()
         datos = self._datos
-
         if texto:
-            datos = [
-                d for d in datos
-                if texto in (d.get("usuario") or "").lower()
-                or texto in (d.get("accion") or "").lower()
-                or texto in (d.get("detalle") or "").lower()
-            ]
-
+            datos = [d for d in datos if self._texto_coincide(d, texto)]
         self.tabla.setRowCount(len(datos))
         for row, d in enumerate(datos):
-            fecha = d["fecha_hora"]
-            if hasattr(fecha, "strftime"):
-                fecha_str = fecha.strftime("%Y-%m-%d %H:%M:%S")
-            else:
-                fecha_str = str(fecha)
-
-            modulo = d.get("modulo", "")
-            color = COLORES_MODULO.get(modulo, "#7F8C8D")
-
-            items = [
-                fecha_str,
-                d.get("username") or d.get("usuario") or "—",
-                modulo,
-                d.get("accion", ""),
-                (d.get("detalle") or "")[:120],
-                d.get("ip") or "—",
-            ]
-
-            for col, val in enumerate(items):
-                item = QTableWidgetItem(str(val))
-                if col == 2:
-                    item.setForeground(QColor(color))
-                self.tabla.setItem(row, col, item)
-
+            self._llenar_fila(row, d)
         self.lbl_total.setText(f"{len(datos)} registros")
