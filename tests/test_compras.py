@@ -119,7 +119,7 @@ def test_listar_proveedores_todos():
 def test_registrar_pedido_fecha_pasada():
     """fecha_estimada en el pasado debe fallar â€” retorna (ok, _) o (ok, _, id)."""
     fecha_pasada = date(2020, 1, 1)
-    resultado = registrar_pedido(1, 1, fecha_pasada, "")
+    resultado = registrar_pedido(1, 1, fecha_pasada, [])
     # Aceptamos 2 o 3 valores de retorno segun la implementacion
     ok = resultado[0]
     assert ok is False
@@ -130,7 +130,7 @@ def test_registrar_pedido_exitoso():
     cur.fetchone.return_value = {"id": 1}
     with patch("models.compras.db_cursor", ctx):
         fecha_futura = date(2030, 12, 31)
-        resultado = registrar_pedido(1, 1, fecha_futura, "Nota")
+        resultado = registrar_pedido(1, 1, fecha_futura, [])
         ok = resultado[0]
         assert ok is True
 
@@ -198,6 +198,7 @@ def test_desactivar_proveedor_mock():
     with patch("models.compras.db_cursor", ctx):
         ok, _ = desactivar_proveedor(1)
         assert ok is True
+
 
 
 
