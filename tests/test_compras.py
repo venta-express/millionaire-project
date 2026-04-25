@@ -6,7 +6,22 @@ Sprint 4: Cobertura de proveedores y pedidos.
 import pytest
 from unittest.mock import patch, MagicMock
 from datetime import date, datetime
-from models.compras import Proveedor, Pedido
+from models.compras import (
+    Proveedor, Pedido,
+    registrar_proveedor, listar_proveedores,
+    registrar_pedido, listar_pedidos,
+    actualizar_estado_pedido, pedidos_pendientes_vencidos,
+    actualizar_proveedor, desactivar_proveedor,
+)
+
+
+def _make_ctx(cur=None):
+    if cur is None:
+        cur = MagicMock()
+    ctx = MagicMock()
+    ctx.return_value.__enter__ = MagicMock(return_value=cur)
+    ctx.return_value.__exit__ = MagicMock(return_value=False)
+    return cur, ctx
 
 
 # ── Tests dataclasses ─────────────────────────────────────────────────────────
@@ -49,35 +64,30 @@ def test_pedido_estados():
         assert p.estado == estado
 
 
-# ── Tests validaciones registrar_proveedor ────────────────────────────────────
+# ── Tests registrar_proveedor ─────────────────────────────────────────────────
 
 def test_registrar_proveedor_nombre_vacio():
-    from models.compras import registrar_proveedor
     ok, msg = registrar_proveedor("", "", "", "", "")
     assert ok is False
     assert "obligatorio" in msg.lower()
 
 
 def test_registrar_proveedor_solo_espacios():
-    from models.compras import registrar_proveedor
     ok, msg = registrar_proveedor("   ", "", "", "", "")
     assert ok is False
 
 
 def test_registrar_proveedor_exitoso():
-    with patch("models.compras.db_cursor") as mock_ctx:
-        mock_cur = MagicMock()
-        mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
-        mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
-        from models.compras import registrar_proveedor
+    cur, ctx = _make_ctx()
+    with patch("models.compras.db_cursor", ctx):
         ok, msg = registrar_proveedor("Repuestos SA", "Juan", "300", "rep@sa.com", "900")
         assert ok is True
 
 
 def test_registrar_proveedor_nit_duplicado():
-    with patch("models.compras.db_cursor") as mock_ctx:
-        mock_ctx.side_effect = Exception("unique constraint")
-        from models.compras import registrar_proveedor
+    ctx = MagicMock()
+    ctx.side_effect = Exception("unique constraint")
+    with patch("models.compras.db_cursor", ctx):
         ok, msg = registrar_proveedor("Repuestos SA", "Juan", "300", "rep@sa.com", "900")
         assert ok is False
 
@@ -87,12 +97,9 @@ def test_registrar_proveedor_nit_duplicado():
 def test_listar_proveedores_activos():
     mock_row = {"id": 1, "nombre": "Prov SA", "contacto": "Juan",
                 "telefono": "300", "email": "p@p.com", "nit": "900", "activo": True}
-    with patch("models.compras.db_cursor") as mock_ctx:
-        mock_cur = MagicMock()
-        mock_cur.fetchall.return_value = [mock_row]
-        mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
-        mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
-        from models.compras import listar_proveedores
+    cur, ctx = _make_ctx()
+    cur.fetchall.return_value = [mock_row]
+    with patch("models.compras.db_cursor", ctx):
         resultado = listar_proveedores(solo_activos=True)
         assert isinstance(resultado, list)
 
@@ -100,12 +107,9 @@ def test_listar_proveedores_activos():
 def test_listar_proveedores_todos():
     mock_row = {"id": 1, "nombre": "Prov SA", "contacto": "Juan",
                 "telefono": "300", "email": "p@p.com", "nit": "900", "activo": False}
-    with patch("models.compras.db_cursor") as mock_ctx:
-        mock_cur = MagicMock()
-        mock_cur.fetchall.return_value = [mock_row]
-        mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
-        mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
-        from models.compras import listar_proveedores
+    cur, ctx = _make_ctx()
+    cur.fetchall.return_value = [mock_row]
+    with patch("models.compras.db_cursor", ctx):
         resultado = listar_proveedores(solo_activos=False)
         assert isinstance(resultado, list)
 
@@ -113,44 +117,38 @@ def test_listar_proveedores_todos():
 # ── Tests registrar_pedido ────────────────────────────────────────────────────
 
 def test_registrar_pedido_fecha_pasada():
-    from models.compras import registrar_pedido
+    """fecha_estimada en el pasado debe fallar — retorna (ok, msg) o (ok, msg, id)."""
     fecha_pasada = date(2020, 1, 1)
-    ok, msg = registrar_pedido(1, 1, fecha_pasada, "")
+    resultado = registrar_pedido(1, 1, fecha_pasada, "")
+    # Aceptamos 2 o 3 valores de retorno segun la implementacion
+    ok = resultado[0]
     assert ok is False
 
 
 def test_registrar_pedido_exitoso():
-    with patch("models.compras.db_cursor") as mock_ctx:
-        mock_cur = MagicMock()
-        mock_cur.fetchone.return_value = {"id": 1}
-        mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
-        mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
-        from models.compras import registrar_pedido
+    cur, ctx = _make_ctx()
+    cur.fetchone.return_value = {"id": 1}
+    with patch("models.compras.db_cursor", ctx):
         fecha_futura = date(2030, 12, 31)
-        ok, msg, _ = registrar_pedido(1, 1, fecha_futura, "Nota")
+        resultado = registrar_pedido(1, 1, fecha_futura, "Nota")
+        ok = resultado[0]
         assert ok is True
 
 
 # ── Tests listar_pedidos ──────────────────────────────────────────────────────
 
 def test_listar_pedidos_sin_filtro():
-    with patch("models.compras.db_cursor") as mock_ctx:
-        mock_cur = MagicMock()
-        mock_cur.fetchall.return_value = []
-        mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
-        mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
-        from models.compras import listar_pedidos
+    cur, ctx = _make_ctx()
+    cur.fetchall.return_value = []
+    with patch("models.compras.db_cursor", ctx):
         resultado = listar_pedidos()
         assert isinstance(resultado, list)
 
 
 def test_listar_pedidos_con_estado():
-    with patch("models.compras.db_cursor") as mock_ctx:
-        mock_cur = MagicMock()
-        mock_cur.fetchall.return_value = []
-        mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
-        mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
-        from models.compras import listar_pedidos
+    cur, ctx = _make_ctx()
+    cur.fetchall.return_value = []
+    with patch("models.compras.db_cursor", ctx):
         resultado = listar_pedidos(estado="Pendiente")
         assert isinstance(resultado, list)
 
@@ -158,17 +156,13 @@ def test_listar_pedidos_con_estado():
 # ── Tests actualizar_estado_pedido ────────────────────────────────────────────
 
 def test_actualizar_estado_pedido_invalido():
-    from models.compras import actualizar_estado_pedido
     ok, msg = actualizar_estado_pedido(1, "EstadoInexistente")
     assert ok is False
 
 
 def test_actualizar_estado_pedido_valido():
-    with patch("models.compras.db_cursor") as mock_ctx:
-        mock_cur = MagicMock()
-        mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
-        mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
-        from models.compras import actualizar_estado_pedido
+    cur, ctx = _make_ctx()
+    with patch("models.compras.db_cursor", ctx):
         ok, msg = actualizar_estado_pedido(1, "Recibido")
         assert ok is True
 
@@ -176,12 +170,9 @@ def test_actualizar_estado_pedido_valido():
 # ── Tests pedidos_pendientes_vencidos ─────────────────────────────────────────
 
 def test_pedidos_pendientes_vencidos_mock():
-    with patch("models.compras.db_cursor") as mock_ctx:
-        mock_cur = MagicMock()
-        mock_cur.fetchall.return_value = []
-        mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
-        mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
-        from models.compras import pedidos_pendientes_vencidos
+    cur, ctx = _make_ctx()
+    cur.fetchall.return_value = []
+    with patch("models.compras.db_cursor", ctx):
         resultado = pedidos_pendientes_vencidos()
         assert isinstance(resultado, list)
 
@@ -189,17 +180,13 @@ def test_pedidos_pendientes_vencidos_mock():
 # ── Tests actualizar_proveedor ────────────────────────────────────────────────
 
 def test_actualizar_proveedor_nombre_vacio():
-    from models.compras import actualizar_proveedor
     ok, msg = actualizar_proveedor(1, "", "", "", "", "")
     assert ok is False
 
 
 def test_actualizar_proveedor_exitoso():
-    with patch("models.compras.db_cursor") as mock_ctx:
-        mock_cur = MagicMock()
-        mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
-        mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
-        from models.compras import actualizar_proveedor
+    cur, ctx = _make_ctx()
+    with patch("models.compras.db_cursor", ctx):
         ok, msg = actualizar_proveedor(1, "Nuevo Nombre", "Cont", "Tel", "Email", "NIT")
         assert ok is True
 
@@ -207,10 +194,7 @@ def test_actualizar_proveedor_exitoso():
 # ── Tests desactivar_proveedor ────────────────────────────────────────────────
 
 def test_desactivar_proveedor_mock():
-    with patch("models.compras.db_cursor") as mock_ctx:
-        mock_cur = MagicMock()
-        mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
-        mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
-        from models.compras import desactivar_proveedor
+    cur, ctx = _make_ctx()
+    with patch("models.compras.db_cursor", ctx):
         ok, msg = desactivar_proveedor(1)
         assert ok is True

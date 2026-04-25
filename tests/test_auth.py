@@ -7,14 +7,24 @@ import pytest
 from unittest.mock import patch, MagicMock
 from models.auth import (
     Usuario, get_usuario_activo, set_usuario_activo,
-    cerrar_sesion, MAX_INTENTOS
+    cerrar_sesion, MAX_INTENTOS,
+    hash_password, iniciar_sesion, crear_usuario,
+    editar_usuario, desbloquear_usuario, listar_usuarios, listar_roles,
 )
+
+
+def _make_ctx(cur=None):
+    if cur is None:
+        cur = MagicMock()
+    ctx = MagicMock()
+    ctx.return_value.__enter__ = MagicMock(return_value=cur)
+    ctx.return_value.__exit__ = MagicMock(return_value=False)
+    return cur, ctx
 
 
 # ── Tests de Usuario dataclass ────────────────────────────────────────────────
 
 def test_usuario_creacion():
-    """Verifica que se puede crear un Usuario con todos sus campos."""
     u = Usuario(
         id=1, cedula="123456789", nombre="Juan Perez",
         username="juan", rol="Gerencia",
@@ -30,14 +40,12 @@ def test_usuario_creacion():
 
 
 def test_usuario_igualdad():
-    """Dos usuarios con los mismos datos deben ser iguales."""
     u1 = Usuario(1, "123", "Juan", "juan", "Gerencia", True, False)
     u2 = Usuario(1, "123", "Juan", "juan", "Gerencia", True, False)
     assert u1 == u2
 
 
 def test_usuario_diferente():
-    """Dos usuarios con diferente ID deben ser distintos."""
     u1 = Usuario(1, "123", "Juan", "juan", "Gerencia", True, False)
     u2 = Usuario(2, "456", "Pedro", "pedro", "Vendedor", True, False)
     assert u1 != u2
@@ -46,13 +54,11 @@ def test_usuario_diferente():
 # ── Tests de sesion global ────────────────────────────────────────────────────
 
 def test_sesion_inicialmente_none():
-    """Al inicio no debe haber sesion activa."""
     set_usuario_activo(None)
     assert get_usuario_activo() is None
 
 
 def test_set_y_get_usuario_activo():
-    """set_usuario_activo debe actualizar la sesion global."""
     u = Usuario(1, "123", "Juan", "juan", "Gerencia", True, False)
     set_usuario_activo(u)
     assert get_usuario_activo() == u
@@ -60,7 +66,6 @@ def test_set_y_get_usuario_activo():
 
 
 def test_cerrar_sesion():
-    """cerrar_sesion debe dejar la sesion en None."""
     u = Usuario(1, "123", "Juan", "juan", "Gerencia", True, False)
     set_usuario_activo(u)
     cerrar_sesion()
@@ -68,7 +73,6 @@ def test_cerrar_sesion():
 
 
 def test_max_intentos_es_3():
-    """La constante MAX_INTENTOS debe ser 3."""
     assert MAX_INTENTOS == 3
 
 
@@ -99,21 +103,176 @@ def test_usuario_inactivo():
     assert u.activo is False
 
 
-# ── Tests con mock de BD ──────────────────────────────────────────────────────
+# ── Tests hash_password ───────────────────────────────────────────────────────
+
+def test_hash_retorna_string():
+    resultado = hash_password("mi_clave_segura")
+    assert isinstance(resultado, str)
+    assert len(resultado) > 0
+
+
+def test_hash_difiere_del_original():
+    resultado = hash_password("mi_clave_segura")
+    assert resultado != "mi_clave_segura"
+
+
+def test_hash_bcrypt_verificable():
+    import bcrypt
+    clave = "clave_de_prueba_123"
+    hashed = hash_password(clave)
+    assert bcrypt.checkpw(clave.encode(), hashed.encode())
+
+
+# ── Tests iniciar_sesion ──────────────────────────────────────────────────────
+
+def test_iniciar_sesion_campos_vacios():
+    ok, msg, u = iniciar_sesion("", "")
+    assert ok is False
+    assert u is None
+
+
+def test_iniciar_sesion_usuario_vacio():
+    ok, msg, u = iniciar_sesion("", "clave123")
+    assert ok is False
+    assert u is None
+
+
+def test_iniciar_sesion_clave_vacia():
+    ok, msg, u = iniciar_sesion("admin", "")
+    assert ok is False
+    assert u is None
+
+
+def test_iniciar_sesion_usuario_no_existe():
+    cur, ctx = _make_ctx()
+    cur.fetchone.return_value = None
+    with patch("models.auth.db_cursor", ctx):
+        ok, msg, u = iniciar_sesion("noexiste", "abc")
+        assert ok is False
+        assert u is None
+
+
+def test_iniciar_sesion_bloqueada():
+    """Cuenta bloqueada: se verifica el flag ANTES del checkpw para evitar
+    ValueError con hashes invalidos en el mock."""
+    import bcrypt
+    hash_valido = bcrypt.hashpw(b"cualquier", bcrypt.gensalt()).decode()
+    mock_row = {
+        "id": 1, "cedula": "1", "nombre": "Juan", "username": "juan",
+        "password_hash": hash_valido,
+        "activo": True, "bloqueado": True,
+        "intentos_fallidos": 3, "rol": "Vendedor",
+    }
+    cur, ctx = _make_ctx()
+    cur.fetchone.return_value = mock_row
+    with patch("models.auth.db_cursor", ctx):
+        ok, msg, u = iniciar_sesion("juan", "cualquier")
+        assert ok is False
+        assert "bloqueada" in msg.lower()
+
+
+def test_iniciar_sesion_inactiva():
+    """Cuenta inactiva: mismo patron con hash valido."""
+    import bcrypt
+    hash_valido = bcrypt.hashpw(b"cualquier", bcrypt.gensalt()).decode()
+    mock_row = {
+        "id": 1, "cedula": "1", "nombre": "Juan", "username": "juan",
+        "password_hash": hash_valido,
+        "activo": False, "bloqueado": False,
+        "intentos_fallidos": 0, "rol": "Vendedor",
+    }
+    cur, ctx = _make_ctx()
+    cur.fetchone.return_value = mock_row
+    with patch("models.auth.db_cursor", ctx):
+        ok, msg, u = iniciar_sesion("juan", "cualquier")
+        assert ok is False
+        assert "inactiva" in msg.lower()
+
+
+# ── Tests crear_usuario ───────────────────────────────────────────────────────
+
+def test_crear_usuario_exitoso():
+    cur, ctx = _make_ctx()
+    cur.fetchone.return_value = {"id": 2}
+    with patch("models.auth.db_cursor", ctx):
+        ok, _ = crear_usuario("123", "Juan", "juan", "clave_segura", "Vendedor")
+        assert ok is True
+
+
+def test_crear_usuario_rol_inexistente():
+    cur, ctx = _make_ctx()
+    cur.fetchone.return_value = None
+    with patch("models.auth.db_cursor", ctx):
+        ok, _ = crear_usuario("123", "Juan", "juan", "clave_segura", "RolInexistente")
+        assert ok is False
+
+
+def test_crear_usuario_duplicado():
+    ctx = MagicMock()
+    ctx.side_effect = Exception("unique constraint")
+    with patch("models.auth.db_cursor", ctx):
+        ok, msg = crear_usuario("123", "Juan", "juan", "clave_segura", "Vendedor")
+        assert ok is False
+        # El mensaje puede venir del modelo o del except; solo validamos que falle
+        assert isinstance(msg, str)
+
+
+# ── Tests editar_usuario ──────────────────────────────────────────────────────
+
+def test_editar_usuario_exitoso():
+    cur, ctx = _make_ctx()
+    cur.fetchone.return_value = {"id": 2}
+    with patch("models.auth.db_cursor", ctx):
+        ok, _ = editar_usuario(1, "Nuevo Nombre", "Vendedor", True)
+        assert ok is True
+
+
+def test_editar_usuario_nueva_clave():
+    cur, ctx = _make_ctx()
+    cur.fetchone.return_value = {"id": 2}
+    with patch("models.auth.db_cursor", ctx):
+        ok, _ = editar_usuario(1, "Nombre", "Vendedor", True, nueva_password="nueva_clave_ok")
+        assert ok is True
+
+
+def test_editar_usuario_rol_inexistente():
+    cur, ctx = _make_ctx()
+    cur.fetchone.return_value = None
+    with patch("models.auth.db_cursor", ctx):
+        ok, _ = editar_usuario(1, "Nombre", "RolMalo", True)
+        assert ok is False
+
+
+# ── Tests desbloquear_usuario ─────────────────────────────────────────────────
+
+def test_desbloquear_usuario():
+    cur, ctx = _make_ctx()
+    with patch("models.auth.db_cursor", ctx):
+        ok, _ = desbloquear_usuario(1)
+        assert ok is True
+
+
+# ── Tests listar_usuarios ─────────────────────────────────────────────────────
 
 def test_listar_usuarios_mock():
-    """listar_usuarios debe retornar lista de dicts desde la BD."""
-    from unittest.mock import patch, MagicMock
     mock_row = {
         "id": 1, "cedula": "123", "nombre": "Juan",
         "username": "juan", "rol": "Gerencia",
-        "activo": True, "bloqueado": False
+        "activo": True, "bloqueado": False,
     }
-    with patch("models.auth.db_cursor") as mock_ctx:
-        mock_cur = MagicMock()
-        mock_cur.fetchall.return_value = [mock_row]
-        mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
-        mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
-        from models.auth import listar_usuarios
+    cur, ctx = _make_ctx()
+    cur.fetchall.return_value = [mock_row]
+    with patch("models.auth.db_cursor", ctx):
         resultado = listar_usuarios()
         assert isinstance(resultado, list)
+
+
+# ── Tests listar_roles ────────────────────────────────────────────────────────
+
+def test_listar_roles_mock():
+    cur, ctx = _make_ctx()
+    cur.fetchall.return_value = [{"nombre": "Gerencia"}, {"nombre": "Vendedor"}]
+    with patch("models.auth.db_cursor", ctx):
+        roles = listar_roles()
+        assert isinstance(roles, list)
+        assert "Gerencia" in roles

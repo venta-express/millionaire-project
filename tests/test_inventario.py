@@ -1,11 +1,30 @@
 """
-Tests unitarios para models/inventario.py - CORREGIDO
+Tests unitarios para models/inventario.py
 Sprint 4: pytest.approx para floats, cobertura completa.
 """
+
 import pytest
 from unittest.mock import patch, MagicMock
-from models.inventario import Producto
+from models.inventario import (
+    Producto,
+    registrar_producto, actualizar_producto,
+    ajustar_stock, desactivar_producto,
+    buscar_productos, obtener_producto,
+    productos_stock_bajo, listar_categorias,
+    obtener_alertas_no_vistas,
+)
 
+
+def _make_ctx(cur=None):
+    if cur is None:
+        cur = MagicMock()
+    ctx = MagicMock()
+    ctx.return_value.__enter__ = MagicMock(return_value=cur)
+    ctx.return_value.__exit__ = MagicMock(return_value=False)
+    return cur, ctx
+
+
+# ── Producto dataclass ────────────────────────────────────────────────────────
 
 def test_producto_creacion():
     p = Producto(1, "P001", "Freno", "Desc", "Frenos", 1, 45000.0, 10, 5, True)
@@ -13,14 +32,17 @@ def test_producto_creacion():
     assert p.nombre == "Freno"
     assert p.activo is True
 
+
 def test_producto_precio_float():
     p = Producto(1, "P001", "Freno", "", "Cat", 1, 45000.0, 10, 5, True)
     assert isinstance(p.precio_unitario, float)
+
 
 def test_producto_precio_cero():
     p = Producto(1, "P001", "Freno", "", "Cat", 1, 0.0, 0, 0, True)
     assert p.stock_actual == 0
     assert isinstance(p.precio_unitario, float)
+
 
 def test_producto_inactivo():
     p = Producto(2, "P002", "Bujia", "", "Electrico", 2, 12000.0, 5, 2, False)
@@ -30,52 +52,51 @@ def test_producto_inactivo():
 # ── registrar_producto ────────────────────────────────────────────────────────
 
 def test_registrar_codigo_vacio():
-    from models.inventario import registrar_producto
     ok, _ = registrar_producto("", "Freno", "", 1, 45000.0, 10, 5)
     assert ok is False
 
+
 def test_registrar_nombre_vacio():
-    from models.inventario import registrar_producto
     ok, _ = registrar_producto("P001", "", "", 1, 45000.0, 10, 5)
     assert ok is False
 
+
 def test_registrar_precio_negativo():
-    from models.inventario import registrar_producto
     ok, _ = registrar_producto("P001", "Freno", "", 1, -1.0, 10, 5)
     assert ok is False
 
+
 def test_registrar_stock_negativo():
-    from models.inventario import registrar_producto
     ok, _ = registrar_producto("P001", "Freno", "", 1, 45000.0, -1, 5)
     assert ok is False
 
+
 def test_registrar_stock_minimo_negativo():
-    from models.inventario import registrar_producto
     ok, _ = registrar_producto("P001", "Freno", "", 1, 45000.0, 10, -1)
     assert ok is False
 
+
 def test_registrar_exitoso():
-    with patch("models.inventario.db_cursor") as mc:
-        cur = MagicMock()
-        cur.fetchone.return_value = {"id": 1}
-        mc.return_value.__enter__ = MagicMock(return_value=cur)
-        mc.return_value.__exit__ = MagicMock(return_value=False)
-        from models.inventario import registrar_producto
+    cur, ctx = _make_ctx()
+    cur.fetchone.return_value = {"id": 1}
+    with patch("models.inventario.db_cursor", ctx):
         ok, _ = registrar_producto("P001", "Freno", "Desc", 1, 45000.0, 10, 5)
         assert ok is True
 
+
 def test_registrar_codigo_duplicado():
-    with patch("models.inventario.db_cursor") as mc:
-        mc.side_effect = Exception("unique constraint violated")
-        from models.inventario import registrar_producto
+    ctx = MagicMock()
+    ctx.side_effect = Exception("unique constraint violated")
+    with patch("models.inventario.db_cursor", ctx):
         ok, msg = registrar_producto("P001", "Freno", "", 1, 45000.0, 10, 5)
         assert ok is False
         assert "P001" in msg
 
+
 def test_registrar_error_generico():
-    with patch("models.inventario.db_cursor") as mc:
-        mc.side_effect = Exception("connection error")
-        from models.inventario import registrar_producto
+    ctx = MagicMock()
+    ctx.side_effect = Exception("connection error")
+    with patch("models.inventario.db_cursor", ctx):
         ok, _ = registrar_producto("P001", "Freno", "", 1, 45000.0, 10, 5)
         assert ok is False
 
@@ -83,28 +104,26 @@ def test_registrar_error_generico():
 # ── actualizar_producto ───────────────────────────────────────────────────────
 
 def test_actualizar_nombre_vacio():
-    from models.inventario import actualizar_producto
     ok, _ = actualizar_producto(1, "", "", 1, 45000.0, 10, 5)
     assert ok is False
 
+
 def test_actualizar_precio_negativo():
-    from models.inventario import actualizar_producto
     ok, _ = actualizar_producto(1, "Freno", "", 1, -500.0, 10, 5)
     assert ok is False
 
+
 def test_actualizar_exitoso():
-    with patch("models.inventario.db_cursor") as mc:
-        cur = MagicMock()
-        mc.return_value.__enter__ = MagicMock(return_value=cur)
-        mc.return_value.__exit__ = MagicMock(return_value=False)
-        from models.inventario import actualizar_producto
+    cur, ctx = _make_ctx()
+    with patch("models.inventario.db_cursor", ctx):
         ok, _ = actualizar_producto(1, "Freno Upd", "Desc", 1, 50000.0, 20, 5)
         assert ok is True
 
+
 def test_actualizar_error_bd():
-    with patch("models.inventario.db_cursor") as mc:
-        mc.side_effect = Exception("BD error")
-        from models.inventario import actualizar_producto
+    ctx = MagicMock()
+    ctx.side_effect = Exception("BD error")
+    with patch("models.inventario.db_cursor", ctx):
         ok, _ = actualizar_producto(1, "Nombre", "", 1, 45000.0, 10, 5)
         assert ok is False
 
@@ -112,21 +131,18 @@ def test_actualizar_error_bd():
 # ── ajustar_stock ─────────────────────────────────────────────────────────────
 
 def test_ajustar_stock_negativo():
-    from models.inventario import ajustar_stock
     ok, _ = ajustar_stock(1, -1)
     assert ok is False
 
+
 def test_ajustar_stock_cero():
-    from models.inventario import ajustar_stock
     ok, _ = ajustar_stock(1, 0)
     assert ok is False
 
+
 def test_ajustar_stock_exitoso():
-    with patch("models.inventario.db_cursor") as mc:
-        cur = MagicMock()
-        mc.return_value.__enter__ = MagicMock(return_value=cur)
-        mc.return_value.__exit__ = MagicMock(return_value=False)
-        from models.inventario import ajustar_stock
+    cur, ctx = _make_ctx()
+    with patch("models.inventario.db_cursor", ctx):
         ok, _ = ajustar_stock(1, 50)
         assert ok is True
 
@@ -134,60 +150,54 @@ def test_ajustar_stock_exitoso():
 # ── desactivar_producto ───────────────────────────────────────────────────────
 
 def test_desactivar_exitoso():
-    with patch("models.inventario.db_cursor") as mc:
-        cur = MagicMock()
-        mc.return_value.__enter__ = MagicMock(return_value=cur)
-        mc.return_value.__exit__ = MagicMock(return_value=False)
-        from models.inventario import desactivar_producto
+    cur, ctx = _make_ctx()
+    with patch("models.inventario.db_cursor", ctx):
         ok, _ = desactivar_producto(1)
         assert ok is True
+
+
+def test_desactivar_error_bd():
+    ctx = MagicMock()
+    ctx.side_effect = Exception("BD error")
+    with patch("models.inventario.db_cursor", ctx):
+        ok, _ = desactivar_producto(1)
+        assert ok is False
 
 
 # ── buscar_productos ──────────────────────────────────────────────────────────
 
 def test_buscar_sin_filtros():
-    with patch("models.inventario.db_cursor") as mc:
-        cur = MagicMock()
-        cur.fetchall.return_value = []
-        mc.return_value.__enter__ = MagicMock(return_value=cur)
-        mc.return_value.__exit__ = MagicMock(return_value=False)
-        from models.inventario import buscar_productos
+    cur, ctx = _make_ctx()
+    cur.fetchall.return_value = []
+    with patch("models.inventario.db_cursor", ctx):
         assert isinstance(buscar_productos(), list)
 
+
 def test_buscar_con_texto():
-    with patch("models.inventario.db_cursor") as mc:
-        cur = MagicMock()
-        cur.fetchall.return_value = []
-        mc.return_value.__enter__ = MagicMock(return_value=cur)
-        mc.return_value.__exit__ = MagicMock(return_value=False)
-        from models.inventario import buscar_productos
+    cur, ctx = _make_ctx()
+    cur.fetchall.return_value = []
+    with patch("models.inventario.db_cursor", ctx):
         assert isinstance(buscar_productos(texto="freno"), list)
 
+
 def test_buscar_con_categoria():
-    with patch("models.inventario.db_cursor") as mc:
-        cur = MagicMock()
-        cur.fetchall.return_value = []
-        mc.return_value.__enter__ = MagicMock(return_value=cur)
-        mc.return_value.__exit__ = MagicMock(return_value=False)
-        from models.inventario import buscar_productos
+    cur, ctx = _make_ctx()
+    cur.fetchall.return_value = []
+    with patch("models.inventario.db_cursor", ctx):
         assert isinstance(buscar_productos(categoria_id=1), list)
 
+
 def test_buscar_solo_activos():
-    with patch("models.inventario.db_cursor") as mc:
-        cur = MagicMock()
-        cur.fetchall.return_value = []
-        mc.return_value.__enter__ = MagicMock(return_value=cur)
-        mc.return_value.__exit__ = MagicMock(return_value=False)
-        from models.inventario import buscar_productos
+    cur, ctx = _make_ctx()
+    cur.fetchall.return_value = []
+    with patch("models.inventario.db_cursor", ctx):
         assert isinstance(buscar_productos(solo_activos=True), list)
 
+
 def test_buscar_texto_y_categoria():
-    with patch("models.inventario.db_cursor") as mc:
-        cur = MagicMock()
-        cur.fetchall.return_value = []
-        mc.return_value.__enter__ = MagicMock(return_value=cur)
-        mc.return_value.__exit__ = MagicMock(return_value=False)
-        from models.inventario import buscar_productos
+    cur, ctx = _make_ctx()
+    cur.fetchall.return_value = []
+    with patch("models.inventario.db_cursor", ctx):
         assert isinstance(buscar_productos(texto="freno", categoria_id=1), list)
 
 
@@ -198,47 +208,36 @@ def test_obtener_existente():
                 "descripcion": "", "categoria": "Frenos",
                 "categoria_id": 1, "precio_unitario": 45000.0,
                 "stock_actual": 10, "stock_minimo": 5, "activo": True}
-    with patch("models.inventario.db_cursor") as mc:
-        cur = MagicMock()
-        cur.fetchone.return_value = mock_row
-        mc.return_value.__enter__ = MagicMock(return_value=cur)
-        mc.return_value.__exit__ = MagicMock(return_value=False)
-        from models.inventario import obtener_producto
+    cur, ctx = _make_ctx()
+    cur.fetchone.return_value = mock_row
+    with patch("models.inventario.db_cursor", ctx):
         p = obtener_producto(1)
         assert p is not None
         assert p.codigo == "P001"
 
+
 def test_obtener_no_existe():
-    with patch("models.inventario.db_cursor") as mc:
-        cur = MagicMock()
-        cur.fetchone.return_value = None
-        mc.return_value.__enter__ = MagicMock(return_value=cur)
-        mc.return_value.__exit__ = MagicMock(return_value=False)
-        from models.inventario import obtener_producto
+    cur, ctx = _make_ctx()
+    cur.fetchone.return_value = None
+    with patch("models.inventario.db_cursor", ctx):
         assert obtener_producto(999) is None
 
 
 # ── productos_stock_bajo ──────────────────────────────────────────────────────
 
 def test_stock_bajo_mock():
-    with patch("models.inventario.db_cursor") as mc:
-        cur = MagicMock()
-        cur.fetchall.return_value = []
-        mc.return_value.__enter__ = MagicMock(return_value=cur)
-        mc.return_value.__exit__ = MagicMock(return_value=False)
-        from models.inventario import productos_stock_bajo
+    cur, ctx = _make_ctx()
+    cur.fetchall.return_value = []
+    with patch("models.inventario.db_cursor", ctx):
         assert isinstance(productos_stock_bajo(), list)
 
 
 # ── listar_categorias ─────────────────────────────────────────────────────────
 
 def test_listar_categorias_mock():
-    with patch("models.inventario.db_cursor") as mc:
-        cur = MagicMock()
-        cur.fetchall.return_value = [{"id": 1, "nombre": "Frenos"}]
-        mc.return_value.__enter__ = MagicMock(return_value=cur)
-        mc.return_value.__exit__ = MagicMock(return_value=False)
-        from models.inventario import listar_categorias
+    cur, ctx = _make_ctx()
+    cur.fetchall.return_value = [{"id": 1, "nombre": "Frenos"}]
+    with patch("models.inventario.db_cursor", ctx):
         cats = listar_categorias()
         assert isinstance(cats, list)
         assert len(cats) == 1
@@ -247,10 +246,7 @@ def test_listar_categorias_mock():
 # ── obtener_alertas_no_vistas ─────────────────────────────────────────────────
 
 def test_alertas_no_vistas_mock():
-    with patch("models.inventario.db_cursor") as mc:
-        cur = MagicMock()
-        cur.fetchall.return_value = []
-        mc.return_value.__enter__ = MagicMock(return_value=cur)
-        mc.return_value.__exit__ = MagicMock(return_value=False)
-        from models.inventario import obtener_alertas_no_vistas
+    cur, ctx = _make_ctx()
+    cur.fetchall.return_value = []
+    with patch("models.inventario.db_cursor", ctx):
         assert isinstance(obtener_alertas_no_vistas(), list)

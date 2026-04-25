@@ -6,7 +6,19 @@ Sprint 4: Cobertura de devoluciones a proveedores.
 import pytest
 from unittest.mock import patch, MagicMock
 from datetime import datetime
-from models.devoluciones import Devolucion
+from models.devoluciones import (
+    Devolucion,
+    registrar_devolucion, listar_devoluciones, actualizar_estado_devolucion,
+)
+
+
+def _make_ctx(cur=None):
+    if cur is None:
+        cur = MagicMock()
+    ctx = MagicMock()
+    ctx.return_value.__enter__ = MagicMock(return_value=cur)
+    ctx.return_value.__exit__ = MagicMock(return_value=False)
+    return cur, ctx
 
 
 # ── Tests dataclass ───────────────────────────────────────────────────────────
@@ -32,91 +44,86 @@ def test_devolucion_estados():
         assert d.estado == estado
 
 
-# ── Tests validaciones registrar_devolucion ───────────────────────────────────
+# ── Tests registrar_devolucion ────────────────────────────────────────────────
 
 def test_registrar_devolucion_cantidad_cero():
-    from models.devoluciones import registrar_devolucion
     ok, msg, dev_id = registrar_devolucion(1, 1, 1, 0, "motivo")
     assert ok is False
     assert "cantidad" in msg.lower()
 
 
 def test_registrar_devolucion_cantidad_negativa():
-    from models.devoluciones import registrar_devolucion
     ok, msg, dev_id = registrar_devolucion(1, 1, 1, -5, "motivo")
     assert ok is False
 
 
 def test_registrar_devolucion_motivo_vacio():
-    from models.devoluciones import registrar_devolucion
     ok, msg, dev_id = registrar_devolucion(1, 1, 1, 3, "")
     assert ok is False
     assert "motivo" in msg.lower()
 
 
 def test_registrar_devolucion_motivo_espacios():
-    from models.devoluciones import registrar_devolucion
     ok, msg, dev_id = registrar_devolucion(1, 1, 1, 3, "   ")
     assert ok is False
 
 
 def test_registrar_devolucion_exitosa():
-    with patch("models.devoluciones.db_cursor") as mock_ctx:
-        mock_cur = MagicMock()
-        mock_cur.fetchone.side_effect = [
-            {"total": 5},    # _generar_numero_dev count
-            {"id": 1}        # RETURNING id
-        ]
-        mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
-        mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
-        from models.devoluciones import registrar_devolucion
+    """
+    Simula el flujo exitoso. Se configuran dos llamadas a fetchone:
+    la primera para el contador interno del numero de devolucion,
+    la segunda para el RETURNING id del INSERT.
+    """
+    cur, ctx = _make_ctx()
+    cur.fetchone.side_effect = [
+        {"total": 5},   # _generar_numero_dev: conteo existente
+        {"id": 1},      # INSERT RETURNING id
+    ]
+    with patch("models.devoluciones.db_cursor", ctx):
         ok, numero, dev_id = registrar_devolucion(1, 1, 1, 2, "Defectuoso")
         assert ok is True
         assert numero.startswith("DEV-")
 
 
+def test_registrar_devolucion_error_bd():
+    """Si la BD falla, registrar_devolucion debe retornar ok=False."""
+    ctx = MagicMock()
+    ctx.side_effect = Exception("BD caida")
+    with patch("models.devoluciones.db_cursor", ctx):
+        ok, msg, dev_id = registrar_devolucion(1, 1, 1, 2, "Defectuoso")
+        assert ok is False
+
+
 # ── Tests listar_devoluciones ─────────────────────────────────────────────────
 
 def test_listar_devoluciones_sin_filtros():
-    with patch("models.devoluciones.db_cursor") as mock_ctx:
-        mock_cur = MagicMock()
-        mock_cur.fetchall.return_value = []
-        mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
-        mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
-        from models.devoluciones import listar_devoluciones
+    cur, ctx = _make_ctx()
+    cur.fetchall.return_value = []
+    with patch("models.devoluciones.db_cursor", ctx):
         resultado = listar_devoluciones()
         assert isinstance(resultado, list)
 
 
 def test_listar_devoluciones_por_estado():
-    with patch("models.devoluciones.db_cursor") as mock_ctx:
-        mock_cur = MagicMock()
-        mock_cur.fetchall.return_value = []
-        mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
-        mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
-        from models.devoluciones import listar_devoluciones
+    cur, ctx = _make_ctx()
+    cur.fetchall.return_value = []
+    with patch("models.devoluciones.db_cursor", ctx):
         resultado = listar_devoluciones(estado="Pendiente")
         assert isinstance(resultado, list)
 
 
 def test_listar_devoluciones_por_proveedor():
-    with patch("models.devoluciones.db_cursor") as mock_ctx:
-        mock_cur = MagicMock()
-        mock_cur.fetchall.return_value = []
-        mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
-        mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
-        from models.devoluciones import listar_devoluciones
+    cur, ctx = _make_ctx()
+    cur.fetchall.return_value = []
+    with patch("models.devoluciones.db_cursor", ctx):
         resultado = listar_devoluciones(proveedor_id=1)
         assert isinstance(resultado, list)
 
 
 def test_listar_devoluciones_ambos_filtros():
-    with patch("models.devoluciones.db_cursor") as mock_ctx:
-        mock_cur = MagicMock()
-        mock_cur.fetchall.return_value = []
-        mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
-        mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
-        from models.devoluciones import listar_devoluciones
+    cur, ctx = _make_ctx()
+    cur.fetchall.return_value = []
+    with patch("models.devoluciones.db_cursor", ctx):
         resultado = listar_devoluciones(estado="Procesada", proveedor_id=2)
         assert isinstance(resultado, list)
 
@@ -124,26 +131,27 @@ def test_listar_devoluciones_ambos_filtros():
 # ── Tests actualizar_estado_devolucion ────────────────────────────────────────
 
 def test_actualizar_estado_devolucion_invalido():
-    from models.devoluciones import actualizar_estado_devolucion
     ok, msg = actualizar_estado_devolucion(1, "EstadoMalo")
     assert ok is False
 
 
 def test_actualizar_estado_devolucion_procesada():
-    with patch("models.devoluciones.db_cursor") as mock_ctx:
-        mock_cur = MagicMock()
-        mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
-        mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
-        from models.devoluciones import actualizar_estado_devolucion
+    cur, ctx = _make_ctx()
+    with patch("models.devoluciones.db_cursor", ctx):
         ok, msg = actualizar_estado_devolucion(1, "Procesada")
         assert ok is True
 
 
 def test_actualizar_estado_devolucion_rechazada():
-    with patch("models.devoluciones.db_cursor") as mock_ctx:
-        mock_cur = MagicMock()
-        mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
-        mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
-        from models.devoluciones import actualizar_estado_devolucion
+    cur, ctx = _make_ctx()
+    with patch("models.devoluciones.db_cursor", ctx):
         ok, msg = actualizar_estado_devolucion(1, "Rechazada")
         assert ok is True
+
+
+def test_actualizar_estado_devolucion_error_bd():
+    ctx = MagicMock()
+    ctx.side_effect = Exception("BD caida")
+    with patch("models.devoluciones.db_cursor", ctx):
+        ok, msg = actualizar_estado_devolucion(1, "Procesada")
+        assert ok is False
