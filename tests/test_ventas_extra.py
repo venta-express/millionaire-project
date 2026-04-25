@@ -1,4 +1,4 @@
-"""Tests extra para models/ventas.py - aumentar cobertura"""
+﻿"""Tests extra para models/ventas.py - aumentar cobertura"""
 import pytest
 from unittest.mock import patch, MagicMock
 from datetime import datetime
@@ -7,7 +7,7 @@ from models.ventas import ItemVenta, Cliente
 
 def test_item_venta_cantidad_1():
     item = ItemVenta(1, "P001", "Prod", 10000.0, 1)
-    assert item.subtotal == 10000.0
+    assert item.subtotal == pytest.approx(10000.0)
 
 
 def test_obtener_o_crear_cliente_existente():
@@ -55,3 +55,4 @@ def test_obtener_detalle_venta_mock():
         mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
         resultado = obtener_detalle_venta(1)
         assert isinstance(resultado, list)
+

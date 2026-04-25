@@ -1,4 +1,4 @@
-"""Tests completos para models/ventas.py"""
+﻿"""Tests completos para models/ventas.py"""
 import pytest
 from unittest.mock import patch, MagicMock
 from models.ventas import ItemVenta, Cliente
@@ -6,12 +6,12 @@ from models.ventas import ItemVenta, Cliente
 
 def test_item_venta_subtotal_calculado():
     item = ItemVenta(1, "P001", "Prod", 10000.0, 3)
-    assert item.subtotal == 30000.0
+    assert item.subtotal == pytest.approx(30000.0)
 
 
 def test_item_venta_subtotal_decimal():
     item = ItemVenta(1, "P001", "Prod", 15000.5, 2)
-    assert item.subtotal == 31001.0
+    assert item.subtotal == pytest.approx(31001.0)
 
 
 def test_cliente_creacion():
@@ -102,3 +102,4 @@ def test_listar_ventas_mock():
         mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
         resultado = listar_ventas()
         assert isinstance(resultado, list)
+

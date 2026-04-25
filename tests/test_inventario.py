@@ -1,4 +1,4 @@
-"""
+﻿"""
 Tests unitarios para models/inventario.py
 Sprint 4: pytest.approx para floats, cobertura completa.
 """
@@ -24,7 +24,7 @@ def _make_ctx(cur=None):
     return cur, ctx
 
 
-# ── Producto dataclass ────────────────────────────────────────────────────────
+# â”€â”€ Producto dataclass â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_producto_creacion():
     p = Producto(1, "P001", "Freno", "Desc", "Frenos", 1, 45000.0, 10, 5, True)
@@ -49,7 +49,7 @@ def test_producto_inactivo():
     assert p.activo is False
 
 
-# ── registrar_producto ────────────────────────────────────────────────────────
+# â”€â”€ registrar_producto â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_registrar_codigo_vacio():
     ok, _ = registrar_producto("", "Freno", "", 1, 45000.0, 10, 5)
@@ -101,22 +101,22 @@ def test_registrar_error_generico():
         assert ok is False
 
 
-# ── actualizar_producto ───────────────────────────────────────────────────────
+# â”€â”€ actualizar_producto â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_actualizar_nombre_vacio():
-    ok, _ = actualizar_producto(1, "", "", 1, 45000.0, 10, 5)
+    ok, _ = actualizar_producto("", "", 1, 45000.0, 10, 5)
     assert ok is False
 
 
 def test_actualizar_precio_negativo():
-    ok, _ = actualizar_producto(1, "Freno", "", 1, -500.0, 10, 5)
+    ok, _ = actualizar_producto("Freno", "", 1, -500.0, 10, 5)
     assert ok is False
 
 
 def test_actualizar_exitoso():
     cur, ctx = _make_ctx()
     with patch("models.inventario.db_cursor", ctx):
-        ok, _ = actualizar_producto(1, "Freno Upd", "Desc", 1, 50000.0, 20, 5)
+        ok, _ = actualizar_producto("Freno Upd", "Desc", 1, 50000.0, 20, 5)
         assert ok is True
 
 
@@ -124,11 +124,11 @@ def test_actualizar_error_bd():
     ctx = MagicMock()
     ctx.side_effect = Exception("BD error")
     with patch("models.inventario.db_cursor", ctx):
-        ok, _ = actualizar_producto(1, "Nombre", "", 1, 45000.0, 10, 5)
+        ok, _ = actualizar_producto("Nombre", "", 1, 45000.0, 10, 5)
         assert ok is False
 
 
-# ── ajustar_stock ─────────────────────────────────────────────────────────────
+# â”€â”€ ajustar_stock â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_ajustar_stock_negativo():
     ok, _ = ajustar_stock(1, -1)
@@ -147,7 +147,7 @@ def test_ajustar_stock_exitoso():
         assert ok is True
 
 
-# ── desactivar_producto ───────────────────────────────────────────────────────
+# â”€â”€ desactivar_producto â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_desactivar_exitoso():
     cur, ctx = _make_ctx()
@@ -164,7 +164,7 @@ def test_desactivar_error_bd():
         assert ok is False
 
 
-# ── buscar_productos ──────────────────────────────────────────────────────────
+# â”€â”€ buscar_productos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_buscar_sin_filtros():
     cur, ctx = _make_ctx()
@@ -201,7 +201,7 @@ def test_buscar_texto_y_categoria():
         assert isinstance(buscar_productos(texto="freno", categoria_id=1), list)
 
 
-# ── obtener_producto ──────────────────────────────────────────────────────────
+# â”€â”€ obtener_producto â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_obtener_existente():
     mock_row = {"id": 1, "codigo": "P001", "nombre": "Freno",
@@ -223,7 +223,7 @@ def test_obtener_no_existe():
         assert obtener_producto(999) is None
 
 
-# ── productos_stock_bajo ──────────────────────────────────────────────────────
+# â”€â”€ productos_stock_bajo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_stock_bajo_mock():
     cur, ctx = _make_ctx()
@@ -232,7 +232,7 @@ def test_stock_bajo_mock():
         assert isinstance(productos_stock_bajo(), list)
 
 
-# ── listar_categorias ─────────────────────────────────────────────────────────
+# â”€â”€ listar_categorias â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_listar_categorias_mock():
     cur, ctx = _make_ctx()
@@ -243,10 +243,11 @@ def test_listar_categorias_mock():
         assert len(cats) == 1
 
 
-# ── obtener_alertas_no_vistas ─────────────────────────────────────────────────
+# â”€â”€ obtener_alertas_no_vistas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_alertas_no_vistas_mock():
     cur, ctx = _make_ctx()
     cur.fetchall.return_value = []
     with patch("models.inventario.db_cursor", ctx):
         assert isinstance(obtener_alertas_no_vistas(), list)
+

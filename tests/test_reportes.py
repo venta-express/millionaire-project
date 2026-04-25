@@ -1,4 +1,4 @@
-"""
+﻿"""
 Tests unitarios para models/reportes.py
 Sprint 4: Cobertura de reportes, exportacion Excel y PDF,
           incluyendo caso fetchone=None.
@@ -24,7 +24,7 @@ def _make_ctx(cur=None):
     return cur, ctx
 
 
-# ── reporte_ventas ────────────────────────────────────────────────────────────
+# â”€â”€ reporte_ventas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_reporte_ventas_retorna_dict():
     resumen_row = {
@@ -67,7 +67,7 @@ def test_reporte_ventas_resumen_none():
             pytest.fail("reporte_ventas lanza TypeError cuando fetchone retorna None")
 
 
-# ── reporte_inventario ────────────────────────────────────────────────────────
+# â”€â”€ reporte_inventario â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_reporte_inventario_retorna_dict():
     resumen_row = {
@@ -109,7 +109,7 @@ def test_reporte_inventario_resumen_none():
             pytest.fail("reporte_inventario lanza TypeError cuando fetchone retorna None")
 
 
-# ── reporte_por_vendedor ──────────────────────────────────────────────────────
+# â”€â”€ reporte_por_vendedor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_reporte_por_vendedor_todos():
     cur, ctx = _make_ctx()
@@ -127,10 +127,10 @@ def test_reporte_por_vendedor_especifico():
         assert isinstance(resultado, dict)
 
 
-# ── exportar_excel ────────────────────────────────────────────────────────────
+# â”€â”€ exportar_excel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_exportar_excel_tipo_invalido():
-    ok, msg = exportar_excel("tipo_invalido", {}, "/tmp/test.xlsx")
+    ok, msg = exportar_excel("tipo_invalido", {}, os.path.join(tempfile.gettempdir(), "test.xlsx"))
     assert ok is False
 
 
@@ -176,10 +176,10 @@ def test_exportar_excel_vendedor():
         assert ok is True
 
 
-# ── exportar_pdf ──────────────────────────────────────────────────────────────
+# â”€â”€ exportar_pdf â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_exportar_pdf_tipo_invalido():
-    ok, msg = exportar_pdf("tipo_malo", {}, "/tmp/test.pdf")
+    ok, msg = exportar_pdf("tipo_malo", {}, os.path.join(tempfile.gettempdir(), "test.pdf"))
     assert ok is False
 
 
@@ -215,3 +215,4 @@ def test_exportar_pdf_inventario():
         ruta = os.path.join(tmpdir, "inv.pdf")
         ok, msg = exportar_pdf("inventario", datos, ruta)
         assert ok is True
+

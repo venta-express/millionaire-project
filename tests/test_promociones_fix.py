@@ -1,4 +1,4 @@
-"""Tests adicionales para models/promociones.py - fix issues SonarCloud"""
+﻿"""Tests adicionales para models/promociones.py - fix issues SonarCloud"""
 import pytest
 from unittest.mock import patch, MagicMock
 from datetime import date
@@ -73,7 +73,7 @@ def test_calcular_descuento_porcentaje():
         mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
         mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
         monto, nombre = calcular_descuento(1, 100000.0)
-        assert monto == 10000.0
+        assert monto == pytest.approx(10000.0)
         assert nombre == "Desc10"
 
 
@@ -86,4 +86,5 @@ def test_calcular_descuento_valor_fijo():
         mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
         mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
         monto, nombre = calcular_descuento(1, 100000.0)
-        assert monto == 5000.0
+        assert monto == pytest.approx(5000.0)
+

@@ -1,4 +1,4 @@
-"""Tests completos para models/auth.py - aumentar cobertura"""
+﻿"""Tests completos para models/auth.py - aumentar cobertura"""
 import pytest
 from unittest.mock import patch, MagicMock, call
 from models.auth import (
@@ -54,7 +54,7 @@ def test_iniciar_sesion_cuenta_bloqueada():
     from models.auth import iniciar_sesion
     mock_row = {
         "id": 1, "cedula": "123", "nombre": "Juan", "username": "juan",
-        "password_hash": "$2b$12$x", "activo": True, "bloqueado": True,
+        "password_hash": "pw_hash_mock", "activo": True, "bloqueado": True,
         "intentos_fallidos": 3, "rol": "Vendedor"
     }
     with patch("models.auth.db_cursor") as mock_ctx:
@@ -71,7 +71,7 @@ def test_iniciar_sesion_cuenta_inactiva():
     from models.auth import iniciar_sesion
     mock_row = {
         "id": 1, "cedula": "123", "nombre": "Juan", "username": "juan",
-        "password_hash": "$2b$12$x", "activo": False, "bloqueado": False,
+        "password_hash": "pw_hash_mock", "activo": False, "bloqueado": False,
         "intentos_fallidos": 0, "rol": "Vendedor"
     }
     with patch("models.auth.db_cursor") as mock_ctx:
@@ -116,3 +116,4 @@ def test_desbloquear_usuario_mock():
         mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
         ok, msg = desbloquear_usuario(1)
         assert ok is True
+
