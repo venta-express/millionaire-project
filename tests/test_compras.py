@@ -180,14 +180,14 @@ def test_pedidos_pendientes_vencidos_mock():
 # â”€â”€ Tests actualizar_proveedor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_actualizar_proveedor_nombre_vacio():
-    ok, _ = actualizar_proveedor(1, "", "", "", "", "")
+    ok, _ = actualizar_proveedor(1, "", "", "", "")
     assert ok is False
 
 
 def test_actualizar_proveedor_exitoso():
     cur, ctx = _make_ctx()
     with patch("models.compras.db_cursor", ctx):
-        ok, _ = actualizar_proveedor(1, "Nuevo Nombre", "Cont", "Tel", "Email", "NIT")
+        ok, _ = actualizar_proveedor(1, "Nuevo Nombre", "Cont", "Tel", "Email")
         assert ok is True
 
 
@@ -198,6 +198,7 @@ def test_desactivar_proveedor_mock():
     with patch("models.compras.db_cursor", ctx):
         ok, _ = desactivar_proveedor(1)
         assert ok is True
+
 
 
 
