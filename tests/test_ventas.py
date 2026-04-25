@@ -1,4 +1,4 @@
-"""
+﻿"""
 Tests unitarios para models/ventas.py
 Sprint 4: Cobertura de logica de ventas.
 """
@@ -8,8 +8,13 @@ from unittest.mock import patch, MagicMock
 from datetime import datetime
 from models.ventas import (
     generar_numero_factura,
-    crear_venta, registrar_venta,
-    listar_ventas, obtener_detalle_venta,
+    registrar_venta,
+    obtener_venta,
+    historial_cliente,
+    buscar_clientes,
+    buscar_cliente_por_cedula,
+    buscar_clientes_historial,
+    obtener_o_crear_cliente,
     ItemVenta,
 )
 
@@ -23,10 +28,7 @@ def _make_ctx(cur=None):
     return cur, ctx
 
 
-# ── generar_numero_factura ────────────────────────────────────────────────────
-
 def test_generar_numero_factura_formato():
-    """El numero de factura debe ser un string no vacio."""
     cur, ctx = _make_ctx()
     cur.fetchone.return_value = {"max_num": None}
     with patch("models.ventas.db_cursor", ctx):
@@ -35,22 +37,7 @@ def test_generar_numero_factura_formato():
         assert len(numero) > 0
 
 
-# ── crear_venta / registrar_venta ─────────────────────────────────────────────
-
-def test_crear_venta_sin_items():
-    """crear_venta debe fallar si no hay items.
-    Acepta tanto (ok, msg) como (ok, msg, id) segun implementacion."""
-    resultado = crear_venta(
-        cliente_id=1, vendedor_id=1,
-        items=[], metodo_pago="Efectivo",
-        descuento_global=0,
-    )
-    ok = resultado[0]
-    assert ok is False
-
-
 def test_registrar_venta_sin_items():
-    """registrar_venta tambien debe rechazar lista vacia."""
     ok, msg, _ = registrar_venta(1, 1, [], "Efectivo")
     assert ok is False
 
@@ -67,37 +54,66 @@ def test_registrar_venta_transferencia_sin_ref():
     assert ok is False
 
 
-# ── listar_ventas ─────────────────────────────────────────────────────────────
-
-def test_listar_ventas_mock():
-    """listar_ventas debe retornar lista de ventas."""
-    mock_rows = [{
-        "id": 1, "numero_factura": "FAC-001",
-        "cliente_nombre": "Juan", "vendedor_nombre": "Admin",
-        "fecha_hora": datetime.now(), "total": 50000.0,
-        "metodo_pago": "Efectivo", "estado": "Completada",
-    }]
+def test_obtener_venta_mock():
+    mock_row = {"id": 1, "numero_factura": "FAC-001", "cliente_id": 1,
+                "vendedor_id": 1, "subtotal": 50000.0, "descuento": 0.0,
+                "total": 50000.0, "metodo_pago": "Efectivo",
+                "referencia_pago": "", "notas": "", "estado": "Completada",
+                "fecha_hora": datetime.now()}
     cur, ctx = _make_ctx()
-    cur.fetchall.return_value = mock_rows
+    cur.fetchone.return_value = mock_row
     with patch("models.ventas.db_cursor", ctx):
-        resultado = listar_ventas()
-        assert isinstance(resultado, list)
+        assert obtener_venta(1) is not None
 
 
-def test_listar_ventas_vacia():
+def test_obtener_venta_no_existe():
     cur, ctx = _make_ctx()
-    cur.fetchall.return_value = []
+    cur.fetchone.return_value = None
     with patch("models.ventas.db_cursor", ctx):
-        resultado = listar_ventas()
-        assert resultado == []
+        assert obtener_venta(999) is None
 
 
-# ── obtener_detalle_venta ─────────────────────────────────────────────────────
-
-def test_obtener_detalle_venta_mock():
-    """obtener_detalle_venta debe retornar lista de items."""
+def test_buscar_clientes_mock():
     cur, ctx = _make_ctx()
     cur.fetchall.return_value = []
     with patch("models.ventas.db_cursor", ctx):
-        resultado = obtener_detalle_venta(1)
-        assert isinstance(resultado, list)
+        assert isinstance(buscar_clientes("Juan"), list)
+
+
+def test_buscar_cliente_cedula_existe():
+    mock_row = {"id": 1, "cedula": "123", "nombre": "Juan",
+                "telefono": "300", "email": "j@j.com"}
+    cur, ctx = _make_ctx()
+    cur.fetchone.return_value = mock_row
+    with patch("models.ventas.db_cursor", ctx):
+        assert buscar_cliente_por_cedula("123") is not None
+
+
+def test_buscar_cliente_cedula_no_existe():
+    cur, ctx = _make_ctx()
+    cur.fetchone.return_value = None
+    with patch("models.ventas.db_cursor", ctx):
+        assert buscar_cliente_por_cedula("999") is None
+
+
+def test_historial_cliente_mock():
+    cur, ctx = _make_ctx()
+    cur.fetchall.return_value = []
+    with patch("models.ventas.db_cursor", ctx):
+        assert isinstance(historial_cliente(1), list)
+
+
+def test_buscar_clientes_historial_mock():
+    cur, ctx = _make_ctx()
+    cur.fetchall.return_value = []
+    with patch("models.ventas.db_cursor", ctx):
+        assert isinstance(buscar_clientes_historial("Juan"), list)
+
+
+def test_obtener_o_crear_cliente_existente():
+    cur, ctx = _make_ctx()
+    cur.fetchone.return_value = {"id": 1}
+    with patch("models.ventas.db_cursor", ctx):
+        ok, _, cid = obtener_o_crear_cliente("123456789", "Juan")
+        assert ok is True
+        assert cid == 1
