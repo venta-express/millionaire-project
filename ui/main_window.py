@@ -252,11 +252,23 @@ class HomeView(QWidget):
             cards_row2.addWidget(stat_card(icon, title, sub_t, color))
         layout.addLayout(cards_row2)
 
+        sprint_lbl = QLabel("Sprint 4 - Historias completadas:")
+        sprint_lbl.setFont(QFont(FONT_FAMILY, 13, QFont.DemiBold))
+        sprint_lbl.setStyleSheet(f"color: {COLORS['text']};")
+        layout.addWidget(sprint_lbl)
 
-
-
-
-
+        hus = [
+            ("OK", "Sprint 4", "Integracion completa con base de datos PostgreSQL"),
+            ("OK", "Sprint 4", "Panel de auditoria de acciones del sistema"),
+            ("OK", "Sprint 4", "Configuracion global de la empresa y prefijos"),
+            ("OK", "Sprint 4", "Backup de base de datos desde la interfaz"),
+            ("OK", "Sprint 4", "Schema acumulativo Sprint 1+2+3+4 sin errores de encoding"),
+        ]
+        for check, code, desc in hus:
+            row = QLabel(f"{check}  {code} - {desc}")
+            row.setFont(QFont(FONT_FAMILY, 12))
+            row.setStyleSheet(f"color: {COLORS['text']}; margin-left: 8px;")
+            layout.addWidget(row)
 
 
 class MainWindow(QMainWindow):

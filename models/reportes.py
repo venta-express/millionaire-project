@@ -163,7 +163,7 @@ def reporte_por_vendedor(fecha_inicio: date_type, fecha_fin: date_type,
 # EXPORTACIÓN A EXCEL
 # ══════════════════════════════════════════════════════════════════════════════
 
-def _excel_estilos(openpyxl):
+def _excel_estilos():
     """Retorna los estilos comunes para encabezados y celdas de Excel."""
     from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
     header_font  = Font(bold=True, color="FFFFFF", size=12)
@@ -307,7 +307,7 @@ def exportar_excel(tipo: str, datos: dict, ruta: str) -> tuple[bool, str]:
         import openpyxl
         wb = openpyxl.Workbook()
         ws = wb.active
-        hf, hfill, ca, tb = _excel_estilos(openpyxl)
+        hf, hfill, ca, tb = _excel_estilos()
 
         if tipo == "ventas":
             _excel_hoja_ventas(ws, datos, hf, hfill, ca, tb)

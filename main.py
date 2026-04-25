@@ -61,7 +61,7 @@ class App(QApplication):
                 "DB_PORT=5432\n"
                 "DB_NAME=autoparts_db\n"
                 "DB_USER=postgres\n"
-                "DB_PASSWORD=tu_contrasena"
+                "DB_PASS=tu_contrasena"
             )
             sys.exit(1)
 

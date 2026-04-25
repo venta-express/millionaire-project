@@ -25,6 +25,9 @@ from PySide6.QtGui import QFont, QColor
 
 # Paleta de colores compartida
 from utils.styles import COLORS
+# Constante para evitar literales duplicados (SonarCloud)
+MSG_ATENCION = "Atención"
+
 from utils.constants import FONT_FAMILY, APP_NAME, LABEL_ATENCION
 
 # Modelo de autenticación para obtener el usuario actual
@@ -505,7 +508,7 @@ class DialogoNuevoPedido(QDialog):
         """
         texto = self.inp_prod.text().strip()
         if not texto:
-            QMessageBox.warning(self, "Atención", "Ingresa el nombre o código del producto.")
+            QMessageBox.warning(self, MSG_ATENCION, "Ingresa el nombre o código del producto.")
             return
 
         # Buscamos el producto en el catálogo activo
@@ -580,14 +583,14 @@ class DialogoNuevoPedido(QDialog):
         """
         # Validación: debe haber al menos un producto en el pedido
         if not self._items:
-            QMessageBox.warning(self, "Atención",
+            QMessageBox.warning(self, MSG_ATENCION,
                                 "Agrega al menos un producto al pedido.")
             return
 
         # Obtenemos el ID del proveedor seleccionado en el ComboBox
         proveedor_id = self.combo_prov.currentData()
         if not proveedor_id:
-            QMessageBox.warning(self, "Atención", "Selecciona un proveedor.")
+            QMessageBox.warning(self, MSG_ATENCION, "Selecciona un proveedor.")
             return
 
         # Convertimos la fecha de QDate a objeto date de Python

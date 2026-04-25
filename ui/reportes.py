@@ -29,6 +29,11 @@ from models.reportes import (
 from models.auth     import listar_usuarios       # Para el combo de vendedores
 from datetime        import date as date_type
 
+# Constantes para evitar literales duplicados (SonarCloud)
+FMT_FECHA        = "dd/MM/yyyy"
+LBL_BTN_EXCEL    = "📥  Excel"
+LBL_BTN_PDF      = "📄  PDF"
+
 
 class ReportesView(QWidget):
     """
@@ -88,7 +93,7 @@ class ReportesView(QWidget):
         # Por defecto: primer día del mes actual
         hoy = QDate.currentDate()
         self.date_v_ini.setDate(QDate(hoy.year(), hoy.month(), 1))
-        self.date_v_ini.setDisplayFormat("dd/MM/yyyy")
+        self.date_v_ini.setDisplayFormat(FMT_FECHA)
         self.date_v_ini.setFixedWidth(130)
         control_row.addWidget(self.date_v_ini)
 
@@ -96,7 +101,7 @@ class ReportesView(QWidget):
         self.date_v_fin = QDateEdit()
         self.date_v_fin.setCalendarPopup(True)
         self.date_v_fin.setDate(hoy)         # Por defecto: hoy
-        self.date_v_fin.setDisplayFormat("dd/MM/yyyy")
+        self.date_v_fin.setDisplayFormat(FMT_FECHA)
         self.date_v_fin.setFixedWidth(130)
         control_row.addWidget(self.date_v_fin)
 
@@ -109,14 +114,14 @@ class ReportesView(QWidget):
         control_row.addStretch()
 
         # Botones de exportar (inicialmente desactivados)
-        self.btn_excel_v = QPushButton("📥  Excel")
+        self.btn_excel_v = QPushButton(LBL_BTN_EXCEL)
         self.btn_excel_v.setObjectName("btn_success")
         self.btn_excel_v.setFixedHeight(38)
         self.btn_excel_v.setEnabled(False)
         self.btn_excel_v.clicked.connect(lambda: self._exportar("ventas", "excel"))
         control_row.addWidget(self.btn_excel_v)
 
-        self.btn_pdf_v = QPushButton("📄  PDF")
+        self.btn_pdf_v = QPushButton(LBL_BTN_PDF)
         self.btn_pdf_v.setObjectName("btn_danger")
         self.btn_pdf_v.setFixedHeight(38)
         self.btn_pdf_v.setEnabled(False)
@@ -179,14 +184,14 @@ class ReportesView(QWidget):
 
         ctrl.addStretch()
 
-        self.btn_excel_i = QPushButton("📥  Excel")
+        self.btn_excel_i = QPushButton(LBL_BTN_EXCEL)
         self.btn_excel_i.setObjectName("btn_success")
         self.btn_excel_i.setFixedHeight(38)
         self.btn_excel_i.setEnabled(False)
         self.btn_excel_i.clicked.connect(lambda: self._exportar("inventario", "excel"))
         ctrl.addWidget(self.btn_excel_i)
 
-        self.btn_pdf_i = QPushButton("📄  PDF")
+        self.btn_pdf_i = QPushButton(LBL_BTN_PDF)
         self.btn_pdf_i.setObjectName("btn_danger")
         self.btn_pdf_i.setFixedHeight(38)
         self.btn_pdf_i.setEnabled(False)
@@ -240,7 +245,7 @@ class ReportesView(QWidget):
         self.date_vend_ini.setCalendarPopup(True)
         hoy = QDate.currentDate()
         self.date_vend_ini.setDate(QDate(hoy.year(), hoy.month(), 1))
-        self.date_vend_ini.setDisplayFormat("dd/MM/yyyy")
+        self.date_vend_ini.setDisplayFormat(FMT_FECHA)
         self.date_vend_ini.setFixedWidth(130)
         ctrl.addWidget(self.date_vend_ini)
 
@@ -248,7 +253,7 @@ class ReportesView(QWidget):
         self.date_vend_fin = QDateEdit()
         self.date_vend_fin.setCalendarPopup(True)
         self.date_vend_fin.setDate(hoy)
-        self.date_vend_fin.setDisplayFormat("dd/MM/yyyy")
+        self.date_vend_fin.setDisplayFormat(FMT_FECHA)
         self.date_vend_fin.setFixedWidth(130)
         ctrl.addWidget(self.date_vend_fin)
 
@@ -270,14 +275,14 @@ class ReportesView(QWidget):
 
         ctrl.addStretch()
 
-        self.btn_excel_vend = QPushButton("📥  Excel")
+        self.btn_excel_vend = QPushButton(LBL_BTN_EXCEL)
         self.btn_excel_vend.setObjectName("btn_success")
         self.btn_excel_vend.setFixedHeight(38)
         self.btn_excel_vend.setEnabled(False)
         self.btn_excel_vend.clicked.connect(lambda: self._exportar("vendedor", "excel"))
         ctrl.addWidget(self.btn_excel_vend)
 
-        self.btn_pdf_vend = QPushButton("📄  PDF")
+        self.btn_pdf_vend = QPushButton(LBL_BTN_PDF)
         self.btn_pdf_vend.setObjectName("btn_danger")
         self.btn_pdf_vend.setFixedHeight(38)
         self.btn_pdf_vend.setEnabled(False)

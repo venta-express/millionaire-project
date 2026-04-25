@@ -198,7 +198,7 @@ ON CONFLICT (nombre) DO NOTHING;
 
 INSERT INTO usuarios (cedula, nombre, username, password_hash, rol_id)
 SELECT '0000000000', 'Administrador', 'admin',
-       '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMZJaaaSwm65NwQ2p0nQbWAqhO',
+       'PLACEHOLDER_CHANGE_ON_FIRST_LOGIN',
        r.id
 FROM roles r WHERE r.nombre = 'Gerencia'
 ON CONFLICT (username) DO NOTHING;
