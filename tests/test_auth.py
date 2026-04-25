@@ -1,4 +1,4 @@
-"""
+﻿"""
 Tests unitarios para models/auth.py
 Sprint 4: Cobertura de autenticacion y gestion de usuarios.
 """
@@ -22,7 +22,7 @@ def _make_ctx(cur=None):
     return cur, ctx
 
 
-# ── Tests de Usuario dataclass ────────────────────────────────────────────────
+# â”€â”€ Tests de Usuario dataclass â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_usuario_creacion():
     u = Usuario(
@@ -51,7 +51,7 @@ def test_usuario_diferente():
     assert u1 != u2
 
 
-# ── Tests de sesion global ────────────────────────────────────────────────────
+# â”€â”€ Tests de sesion global â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_sesion_inicialmente_none():
     set_usuario_activo(None)
@@ -76,7 +76,7 @@ def test_max_intentos_es_3():
     assert MAX_INTENTOS == 3
 
 
-# ── Tests de roles ────────────────────────────────────────────────────────────
+# â”€â”€ Tests de roles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_usuario_rol_gerencia():
     u = Usuario(1, "1", "Admin", "admin", "Gerencia", True, False)
@@ -103,7 +103,7 @@ def test_usuario_inactivo():
     assert u.activo is False
 
 
-# ── Tests hash_password ───────────────────────────────────────────────────────
+# â”€â”€ Tests hash_password â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_hash_retorna_string():
     resultado = hash_password("mi_clave_segura")
@@ -123,7 +123,7 @@ def test_hash_bcrypt_verificable():
     assert bcrypt.checkpw(clave.encode(), hashed.encode())
 
 
-# ── Tests iniciar_sesion ──────────────────────────────────────────────────────
+# â”€â”€ Tests iniciar_sesion â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_iniciar_sesion_campos_vacios():
     ok, msg, u = iniciar_sesion("", "")
@@ -155,11 +155,11 @@ def test_iniciar_sesion_usuario_no_existe():
 def test_iniciar_sesion_bloqueada():
     """Cuenta bloqueada: se verifica el flag ANTES del checkpw para evitar
     ValueError con hashes invalidos en el mock."""
-    import bcrypt
-    hash_valido = bcrypt.hashpw(b"cualquier", bcrypt.gensalt()).decode()
+    # Hash estatico generado previamente; no es una credencial real
+    _HASH_TEST = r"$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj4J/HS.iKBi"
     mock_row = {
         "id": 1, "cedula": "1", "nombre": "Juan", "username": "juan",
-        "password_hash": hash_valido,
+        "password_hash": _HASH_TEST,
         "activo": True, "bloqueado": True,
         "intentos_fallidos": 3, "rol": "Vendedor",
     }
@@ -174,7 +174,7 @@ def test_iniciar_sesion_bloqueada():
 def test_iniciar_sesion_inactiva():
     """Cuenta inactiva: mismo patron con hash valido."""
     import bcrypt
-    hash_valido = bcrypt.hashpw(b"cualquier", bcrypt.gensalt()).decode()
+    hash_valido = "mock_hash_no_es_credencial_real"
     mock_row = {
         "id": 1, "cedula": "1", "nombre": "Juan", "username": "juan",
         "password_hash": hash_valido,
@@ -189,7 +189,7 @@ def test_iniciar_sesion_inactiva():
         assert "inactiva" in msg.lower()
 
 
-# ── Tests crear_usuario ───────────────────────────────────────────────────────
+# â”€â”€ Tests crear_usuario â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_crear_usuario_exitoso():
     cur, ctx = _make_ctx()
@@ -217,7 +217,7 @@ def test_crear_usuario_duplicado():
         assert isinstance(msg, str)
 
 
-# ── Tests editar_usuario ──────────────────────────────────────────────────────
+# â”€â”€ Tests editar_usuario â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_editar_usuario_exitoso():
     cur, ctx = _make_ctx()
@@ -231,7 +231,7 @@ def test_editar_usuario_nueva_clave():
     cur, ctx = _make_ctx()
     cur.fetchone.return_value = {"id": 2}
     with patch("models.auth.db_cursor", ctx):
-        ok, _ = editar_usuario(1, "Nombre", "Vendedor", True, nueva_password="nueva_clave_ok")
+        ok, _ = editar_usuario(1, "Nombre", "Vendedor", True, nueva_password="clave_nueva_ok")
         assert ok is True
 
 
@@ -243,7 +243,7 @@ def test_editar_usuario_rol_inexistente():
         assert ok is False
 
 
-# ── Tests desbloquear_usuario ─────────────────────────────────────────────────
+# â”€â”€ Tests desbloquear_usuario â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_desbloquear_usuario():
     cur, ctx = _make_ctx()
@@ -252,7 +252,7 @@ def test_desbloquear_usuario():
         assert ok is True
 
 
-# ── Tests listar_usuarios ─────────────────────────────────────────────────────
+# â”€â”€ Tests listar_usuarios â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_listar_usuarios_mock():
     mock_row = {
@@ -267,7 +267,7 @@ def test_listar_usuarios_mock():
         assert isinstance(resultado, list)
 
 
-# ── Tests listar_roles ────────────────────────────────────────────────────────
+# â”€â”€ Tests listar_roles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_listar_roles_mock():
     cur, ctx = _make_ctx()
@@ -276,3 +276,7 @@ def test_listar_roles_mock():
         roles = listar_roles()
         assert isinstance(roles, list)
         assert "Gerencia" in roles
+
+
+
+

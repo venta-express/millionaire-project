@@ -117,3 +117,4 @@ def test_desbloquear_usuario_mock():
         ok, msg = desbloquear_usuario(1)
         assert ok is True
 
+

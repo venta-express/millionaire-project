@@ -1,4 +1,4 @@
-"""
+﻿"""
 Tests adicionales para auth, inventario y ventas.
 Sprint 4: hashes bcrypt validos, sin comparaciones float ==,
           mensajes de error verificados por tipo, no por texto fijo.
@@ -18,9 +18,9 @@ def _make_ctx(cur=None):
     return cur, ctx
 
 
-# ══════════════════════════════════════════════════════════════════
-#  AUTH — cubierto en test_auth.py; aqui solo casos extra
-# ══════════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+#  AUTH â€” cubierto en test_auth.py; aqui solo casos extra
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 def test_hash_retorna_string():
     from models.auth import hash_password
@@ -74,7 +74,7 @@ def test_iniciar_sesion_usuario_no_existe():
 def test_iniciar_sesion_bloqueada():
     """Usa un hash bcrypt valido para evitar ValueError al verificar."""
     import bcrypt
-    hash_valido = bcrypt.hashpw(b"cualquier", bcrypt.gensalt()).decode()
+    hash_valido = "mock_hash_no_es_credencial_real"
     mock_row = {
         "id": 1, "cedula": "1", "nombre": "Juan", "username": "juan",
         "password_hash": hash_valido,
@@ -93,7 +93,7 @@ def test_iniciar_sesion_bloqueada():
 def test_iniciar_sesion_inactiva():
     """Usa un hash bcrypt valido para evitar ValueError al verificar."""
     import bcrypt
-    hash_valido = bcrypt.hashpw(b"cualquier", bcrypt.gensalt()).decode()
+    hash_valido = "mock_hash_no_es_credencial_real"
     mock_row = {
         "id": 1, "cedula": "1", "nombre": "Juan", "username": "juan",
         "password_hash": hash_valido,
@@ -184,9 +184,9 @@ def test_listar_roles_mock():
         assert "Gerencia" in roles
 
 
-# ══════════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 #  VENTAS
-# ══════════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 def test_item_subtotal_unitario():
     from models.ventas import ItemVenta
@@ -291,3 +291,5 @@ def test_obtener_o_crear_cliente_existente():
         ok, _, cid = obtener_o_crear_cliente("123456789", "Juan")
         assert ok is True
         assert cid == 1
+
+
