@@ -88,7 +88,7 @@ def test_registrar_codigo_duplicado():
     ctx = MagicMock()
     ctx.side_effect = Exception("unique constraint violated")
     with patch("models.inventario.db_cursor", ctx):
-        ok, msg = registrar_producto("P001", "Freno", "", 1, 45000.0, 10, 5)
+        ok, _ = registrar_producto("P001", "Freno", "", 1, 45000.0, 10, 5)
         assert ok is False
         assert "P001" in msg
 
@@ -104,19 +104,19 @@ def test_registrar_error_generico():
 # â”€â”€ actualizar_producto â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_actualizar_nombre_vacio():
-    ok, _ = actualizar_producto("", "", 1, 45000.0, 10, 5)
+    ok, _ = actualizar_producto(1, "", "", 1, 45000.0, 10, 5)
     assert ok is False
 
 
 def test_actualizar_precio_negativo():
-    ok, _ = actualizar_producto("Freno", "", 1, -500.0, 10, 5)
+    ok, _ = actualizar_producto(1, "Freno", "", 1, -500.0, 10, 5)
     assert ok is False
 
 
 def test_actualizar_exitoso():
     cur, ctx = _make_ctx()
     with patch("models.inventario.db_cursor", ctx):
-        ok, _ = actualizar_producto("Freno Upd", "Desc", 1, 50000.0, 20, 5)
+        ok, _ = actualizar_producto(1, "Freno Upd", "Desc", 1, 50000.0, 20, 5)
         assert ok is True
 
 
@@ -124,7 +124,7 @@ def test_actualizar_error_bd():
     ctx = MagicMock()
     ctx.side_effect = Exception("BD error")
     with patch("models.inventario.db_cursor", ctx):
-        ok, _ = actualizar_producto("Nombre", "", 1, 45000.0, 10, 5)
+        ok, _ = actualizar_producto(1, "Nombre", "", 1, 45000.0, 10, 5)
         assert ok is False
 
 
@@ -250,5 +250,7 @@ def test_alertas_no_vistas_mock():
     cur.fetchall.return_value = []
     with patch("models.inventario.db_cursor", ctx):
         assert isinstance(obtener_alertas_no_vistas(), list)
+
+
 
 

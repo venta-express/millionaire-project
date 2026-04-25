@@ -67,20 +67,20 @@ def test_pedido_estados():
 # â”€â”€ Tests registrar_proveedor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_registrar_proveedor_nombre_vacio():
-    ok, msg = registrar_proveedor("", "", "", "", "")
+    ok, _ = registrar_proveedor("", "", "", "", "")
     assert ok is False
     assert "obligatorio" in msg.lower()
 
 
 def test_registrar_proveedor_solo_espacios():
-    ok, msg = registrar_proveedor("   ", "", "", "", "")
+    ok, _ = registrar_proveedor("   ", "", "", "", "")
     assert ok is False
 
 
 def test_registrar_proveedor_exitoso():
     cur, ctx = _make_ctx()
     with patch("models.compras.db_cursor", ctx):
-        ok, msg = registrar_proveedor("Repuestos SA", "Juan", "300", "rep@sa.com", "900")
+        ok, _ = registrar_proveedor("Repuestos SA", "Juan", "300", "rep@sa.com", "900")
         assert ok is True
 
 
@@ -88,7 +88,7 @@ def test_registrar_proveedor_nit_duplicado():
     ctx = MagicMock()
     ctx.side_effect = Exception("unique constraint")
     with patch("models.compras.db_cursor", ctx):
-        ok, msg = registrar_proveedor("Repuestos SA", "Juan", "300", "rep@sa.com", "900")
+        ok, _ = registrar_proveedor("Repuestos SA", "Juan", "300", "rep@sa.com", "900")
         assert ok is False
 
 
@@ -117,7 +117,7 @@ def test_listar_proveedores_todos():
 # â”€â”€ Tests registrar_pedido â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_registrar_pedido_fecha_pasada():
-    """fecha_estimada en el pasado debe fallar â€” retorna (ok, msg) o (ok, msg, id)."""
+    """fecha_estimada en el pasado debe fallar â€” retorna (ok, _) o (ok, _, id)."""
     fecha_pasada = date(2020, 1, 1)
     resultado = registrar_pedido(1, 1, fecha_pasada, "")
     # Aceptamos 2 o 3 valores de retorno segun la implementacion
@@ -156,14 +156,14 @@ def test_listar_pedidos_con_estado():
 # â”€â”€ Tests actualizar_estado_pedido â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_actualizar_estado_pedido_invalido():
-    ok, msg = actualizar_estado_pedido(1, "EstadoInexistente")
+    ok, _ = actualizar_estado_pedido(1, "EstadoInexistente")
     assert ok is False
 
 
 def test_actualizar_estado_pedido_valido():
     cur, ctx = _make_ctx()
     with patch("models.compras.db_cursor", ctx):
-        ok, msg = actualizar_estado_pedido(1, "Recibido")
+        ok, _ = actualizar_estado_pedido(1, "Recibido")
         assert ok is True
 
 
@@ -180,14 +180,14 @@ def test_pedidos_pendientes_vencidos_mock():
 # â”€â”€ Tests actualizar_proveedor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_actualizar_proveedor_nombre_vacio():
-    ok, msg = actualizar_proveedor("", "", "", "", "")
+    ok, _ = actualizar_proveedor(1, "", "", "", "", "")
     assert ok is False
 
 
 def test_actualizar_proveedor_exitoso():
     cur, ctx = _make_ctx()
     with patch("models.compras.db_cursor", ctx):
-        ok, msg = actualizar_proveedor("Nuevo Nombre", "Cont", "Tel", "Email", "NIT")
+        ok, _ = actualizar_proveedor(1, "Nuevo Nombre", "Cont", "Tel", "Email", "NIT")
         assert ok is True
 
 
@@ -196,7 +196,9 @@ def test_actualizar_proveedor_exitoso():
 def test_desactivar_proveedor_mock():
     cur, ctx = _make_ctx()
     with patch("models.compras.db_cursor", ctx):
-        ok, msg = desactivar_proveedor(1)
+        ok, _ = desactivar_proveedor(1)
         assert ok is True
+
+
 
 
