@@ -216,3 +216,4 @@ def test_exportar_pdf_inventario():
         ok, msg = exportar_pdf("inventario", datos, ruta)
         assert ok is True
 
+

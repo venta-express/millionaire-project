@@ -56,3 +56,4 @@ def test_obtener_detalle_venta_mock():
         resultado = obtener_detalle_venta(1)
         assert isinstance(resultado, list)
 
+

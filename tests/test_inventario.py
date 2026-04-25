@@ -251,3 +251,4 @@ def test_alertas_no_vistas_mock():
     with patch("models.inventario.db_cursor", ctx):
         assert isinstance(obtener_alertas_no_vistas(), list)
 
+

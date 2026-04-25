@@ -199,3 +199,4 @@ def test_desactivar_proveedor_mock():
         ok, msg = desactivar_proveedor(1)
         assert ok is True
 
+

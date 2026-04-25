@@ -103,3 +103,4 @@ def test_listar_ventas_mock():
         resultado = listar_ventas()
         assert isinstance(resultado, list)
 
+

@@ -88,3 +88,4 @@ def test_calcular_descuento_valor_fijo():
         monto, nombre = calcular_descuento(1, 100000.0)
         assert monto == pytest.approx(5000.0)
 
+
