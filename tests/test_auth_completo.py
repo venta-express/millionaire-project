@@ -21,20 +21,20 @@ def test_hash_password_diferente_cada_vez():
 
 def test_iniciar_sesion_campos_vacios():
     from models.auth import iniciar_sesion
-    ok, msg, u = iniciar_sesion("", "")
+    ok, _, u = iniciar_sesion("", "")
     assert ok is False
     assert u is None
 
 
 def test_iniciar_sesion_username_vacio():
     from models.auth import iniciar_sesion
-    ok, msg, u = iniciar_sesion("", "password")
+    ok, _, u = iniciar_sesion("", "password")
     assert ok is False
 
 
 def test_iniciar_sesion_password_vacio():
     from models.auth import iniciar_sesion
-    ok, msg, u = iniciar_sesion("admin", "")
+    ok, _, u = iniciar_sesion("admin", "")
     assert ok is False
 
 
@@ -45,7 +45,7 @@ def test_iniciar_sesion_usuario_no_existe():
         mock_cur.fetchone.return_value = None
         mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
         mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
-        ok, msg, u = iniciar_sesion("noexiste", "pass")
+        ok, _, u = iniciar_sesion("noexiste", "pass")
         assert ok is False
         assert u is None
 
@@ -62,7 +62,7 @@ def test_iniciar_sesion_cuenta_bloqueada():
         mock_cur.fetchone.return_value = mock_row
         mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
         mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
-        ok, msg, u = iniciar_sesion("juan", "pass")
+        ok, _, u = iniciar_sesion("juan", "pass")
         assert ok is False
         assert "bloqueada" in msg.lower()
 
@@ -79,7 +79,7 @@ def test_iniciar_sesion_cuenta_inactiva():
         mock_cur.fetchone.return_value = mock_row
         mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
         mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
-        ok, msg, u = iniciar_sesion("juan", "pass")
+        ok, _, u = iniciar_sesion("juan", "pass")
         assert ok is False
         assert "inactiva" in msg.lower()
 
@@ -91,7 +91,7 @@ def test_crear_usuario_campos_vacios():
         mock_cur.fetchone.return_value = None
         mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
         mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
-        ok, msg = crear_usuario("", "Juan", "juan", "pass", "Vendedor")
+        ok, _ = crear_usuario("", "Juan", "juan", "pass", "Vendedor")
         assert ok is False
 
 
@@ -114,8 +114,9 @@ def test_desbloquear_usuario_mock():
         mock_cur = MagicMock()
         mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
         mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
-        ok, msg = desbloquear_usuario(1)
+        ok, _ = desbloquear_usuario(1)
         assert ok is True
+
 
 
 

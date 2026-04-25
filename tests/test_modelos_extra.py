@@ -45,19 +45,19 @@ def test_hash_bcrypt_verificable():
 
 def test_iniciar_sesion_campos_vacios():
     from models.auth import iniciar_sesion
-    ok, msg, u = iniciar_sesion("", "")
+    ok, _, u = iniciar_sesion("", "")
     assert ok is False
 
 
 def test_iniciar_sesion_usuario_vacio():
     from models.auth import iniciar_sesion
-    ok, msg, u = iniciar_sesion("", "clave123")
+    ok, _, u = iniciar_sesion("", "clave123")
     assert ok is False
 
 
 def test_iniciar_sesion_clave_vacia():
     from models.auth import iniciar_sesion
-    ok, msg, u = iniciar_sesion("admin", "")
+    ok, _, u = iniciar_sesion("admin", "")
     assert ok is False
 
 
@@ -66,7 +66,7 @@ def test_iniciar_sesion_usuario_no_existe():
     cur.fetchone.return_value = None
     with patch("models.auth.db_cursor", ctx):
         from models.auth import iniciar_sesion
-        ok, msg, u = iniciar_sesion("noexiste", "abc")
+        ok, _, u = iniciar_sesion("noexiste", "abc")
         assert ok is False
         assert u is None
 
@@ -85,7 +85,7 @@ def test_iniciar_sesion_bloqueada():
     cur.fetchone.return_value = mock_row
     with patch("models.auth.db_cursor", ctx):
         from models.auth import iniciar_sesion
-        ok, msg, u = iniciar_sesion("juan", "cualquier")
+        ok, _, u = iniciar_sesion("juan", "cualquier")
         assert ok is False
         assert "bloqueada" in msg.lower()
 
@@ -104,7 +104,7 @@ def test_iniciar_sesion_inactiva():
     cur.fetchone.return_value = mock_row
     with patch("models.auth.db_cursor", ctx):
         from models.auth import iniciar_sesion
-        ok, msg, u = iniciar_sesion("juan", "cualquier")
+        ok, _, u = iniciar_sesion("juan", "cualquier")
         assert ok is False
         assert "inactiva" in msg.lower()
 
@@ -134,7 +134,7 @@ def test_crear_usuario_duplicado():
     ctx.side_effect = Exception("unique constraint")
     with patch("models.auth.db_cursor", ctx):
         from models.auth import crear_usuario
-        ok, msg = crear_usuario("123", "Juan", "juan", "clave_segura", "Vendedor")
+        ok, _ = crear_usuario("123", "Juan", "juan", "clave_segura", "Vendedor")
         assert ok is False
         assert isinstance(msg, str) and len(msg) > 0
 
@@ -209,20 +209,20 @@ def test_item_subtotal_es_float():
 def test_registrar_venta_metodo_invalido():
     from models.ventas import ItemVenta, registrar_venta
     item = ItemVenta(1, "P001", "Freno", 45000.0, 1)
-    ok, msg, _ = registrar_venta(1, 1, [item], "Cheque")
+    ok, _, _ = registrar_venta(1, 1, [item], "Cheque")
     assert ok is False
 
 
 def test_registrar_venta_transferencia_sin_ref():
     from models.ventas import ItemVenta, registrar_venta
     item = ItemVenta(1, "P001", "Freno", 45000.0, 1)
-    ok, msg, _ = registrar_venta(1, 1, [item], "Transferencia", referencia_pago="")
+    ok, _, _ = registrar_venta(1, 1, [item], "Transferencia", referencia_pago="")
     assert ok is False
 
 
 def test_registrar_venta_lista_vacia():
     from models.ventas import registrar_venta
-    ok, msg, _ = registrar_venta(1, 1, [], "Efectivo")
+    ok, _, _ = registrar_venta(1, 1, [], "Efectivo")
     assert ok is False
 
 
@@ -288,9 +288,10 @@ def test_obtener_o_crear_cliente_existente():
     cur.fetchone.return_value = {"id": 1}
     with patch("models.ventas.db_cursor", ctx):
         from models.ventas import obtener_o_crear_cliente
-        ok, _, cid = obtener_o_crear_cliente("123456789", "Juan")
+        ok, _, _ = obtener_o_crear_cliente("123456789", "Juan")
         assert ok is True
         assert cid == 1
+
 
 
 

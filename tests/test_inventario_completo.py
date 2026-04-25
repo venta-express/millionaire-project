@@ -1,4 +1,4 @@
-"""Tests completos para models/inventario.py"""
+﻿"""Tests completos para models/inventario.py"""
 import pytest
 from unittest.mock import patch, MagicMock
 from models.inventario import Producto
@@ -6,7 +6,7 @@ from models.inventario import Producto
 
 def test_ajustar_stock_negativo():
     from models.inventario import ajustar_stock
-    ok, msg = ajustar_stock(1, -5)
+    ok, _ = ajustar_stock(1, -5)
     assert ok is False
 
 
@@ -17,7 +17,7 @@ def test_ajustar_stock_cero():
         mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
         mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
         with patch("models.inventario._registrar_alerta_si_necesario"):
-            ok, msg = ajustar_stock(1, 0)
+            ok, _ = ajustar_stock(1, 0)
             assert ok is True
 
 
@@ -27,7 +27,7 @@ def test_desactivar_producto_mock():
         mock_cur = MagicMock()
         mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
         mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
-        ok, msg = desactivar_producto(1)
+        ok, _ = desactivar_producto(1)
         assert ok is True
 
 
@@ -131,5 +131,6 @@ def test_actualizar_producto_mock():
         mock_cur = MagicMock()
         mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
         mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
-        ok, msg = actualizar_producto(1, "Prod", "", 1, 10000.0, 5)
+        ok, _ = actualizar_producto(1, "Prod", "", 1, 10000.0, 5)
         assert ok is True
+

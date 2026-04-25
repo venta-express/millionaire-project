@@ -1,4 +1,4 @@
-"""
+﻿"""
 Tests unitarios para models/devoluciones.py
 Sprint 4: Cobertura de devoluciones a proveedores.
 """
@@ -21,7 +21,7 @@ def _make_ctx(cur=None):
     return cur, ctx
 
 
-# ── Tests dataclass ───────────────────────────────────────────────────────────
+# â”€â”€ Tests dataclass â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_devolucion_creacion():
     d = Devolucion(
@@ -44,27 +44,27 @@ def test_devolucion_estados():
         assert d.estado == estado
 
 
-# ── Tests registrar_devolucion ────────────────────────────────────────────────
+# â”€â”€ Tests registrar_devolucion â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_registrar_devolucion_cantidad_cero():
-    ok, msg, dev_id = registrar_devolucion(1, 1, 1, 0, "motivo")
+    ok, _, _ = registrar_devolucion(1, 1, 1, 0, "motivo")
     assert ok is False
     assert "cantidad" in msg.lower()
 
 
 def test_registrar_devolucion_cantidad_negativa():
-    ok, msg, dev_id = registrar_devolucion(1, 1, 1, -5, "motivo")
+    ok, _, _ = registrar_devolucion(1, 1, 1, -5, "motivo")
     assert ok is False
 
 
 def test_registrar_devolucion_motivo_vacio():
-    ok, msg, dev_id = registrar_devolucion(1, 1, 1, 3, "")
+    ok, _, _ = registrar_devolucion(1, 1, 1, 3, "")
     assert ok is False
     assert "motivo" in msg.lower()
 
 
 def test_registrar_devolucion_motivo_espacios():
-    ok, msg, dev_id = registrar_devolucion(1, 1, 1, 3, "   ")
+    ok, _, _ = registrar_devolucion(1, 1, 1, 3, "   ")
     assert ok is False
 
 
@@ -80,7 +80,7 @@ def test_registrar_devolucion_exitosa():
         {"id": 1},      # INSERT RETURNING id
     ]
     with patch("models.devoluciones.db_cursor", ctx):
-        ok, numero, dev_id = registrar_devolucion(1, 1, 1, 2, "Defectuoso")
+        ok, numero, _ = registrar_devolucion(1, 1, 1, 2, "Defectuoso")
         assert ok is True
         assert numero.startswith("DEV-")
 
@@ -90,11 +90,11 @@ def test_registrar_devolucion_error_bd():
     ctx = MagicMock()
     ctx.side_effect = Exception("BD caida")
     with patch("models.devoluciones.db_cursor", ctx):
-        ok, msg, dev_id = registrar_devolucion(1, 1, 1, 2, "Defectuoso")
+        ok, _, _ = registrar_devolucion(1, 1, 1, 2, "Defectuoso")
         assert ok is False
 
 
-# ── Tests listar_devoluciones ─────────────────────────────────────────────────
+# â”€â”€ Tests listar_devoluciones â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_listar_devoluciones_sin_filtros():
     cur, ctx = _make_ctx()
@@ -128,24 +128,24 @@ def test_listar_devoluciones_ambos_filtros():
         assert isinstance(resultado, list)
 
 
-# ── Tests actualizar_estado_devolucion ────────────────────────────────────────
+# â”€â”€ Tests actualizar_estado_devolucion â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_actualizar_estado_devolucion_invalido():
-    ok, msg = actualizar_estado_devolucion(1, "EstadoMalo")
+    ok, _ = actualizar_estado_devolucion(1, "EstadoMalo")
     assert ok is False
 
 
 def test_actualizar_estado_devolucion_procesada():
     cur, ctx = _make_ctx()
     with patch("models.devoluciones.db_cursor", ctx):
-        ok, msg = actualizar_estado_devolucion(1, "Procesada")
+        ok, _ = actualizar_estado_devolucion(1, "Procesada")
         assert ok is True
 
 
 def test_actualizar_estado_devolucion_rechazada():
     cur, ctx = _make_ctx()
     with patch("models.devoluciones.db_cursor", ctx):
-        ok, msg = actualizar_estado_devolucion(1, "Rechazada")
+        ok, _ = actualizar_estado_devolucion(1, "Rechazada")
         assert ok is True
 
 
@@ -153,5 +153,6 @@ def test_actualizar_estado_devolucion_error_bd():
     ctx = MagicMock()
     ctx.side_effect = Exception("BD caida")
     with patch("models.devoluciones.db_cursor", ctx):
-        ok, msg = actualizar_estado_devolucion(1, "Procesada")
+        ok, _ = actualizar_estado_devolucion(1, "Procesada")
         assert ok is False
+

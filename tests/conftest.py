@@ -1,4 +1,4 @@
-"""
+﻿"""
 AutoParts Express - Configuracion de pytest
 Sprint 4: Tests unitarios para aumentar cobertura en SonarCloud.
 """
@@ -68,7 +68,7 @@ def mock_connection():
 @pytest.fixture
 def make_db_ctx():
     """
-    Fixture factory: devuelve una funcion que construye un par (cur, ctx)
+    Fixture factory: devuelve una funcion que construye un par (_, ctx)
     listo para usar como patch target de db_cursor.
 
     Uso:
@@ -88,3 +88,4 @@ def make_db_ctx():
         ctx.return_value.__exit__ = MagicMock(return_value=False)
         return cur, ctx
     return _factory
+

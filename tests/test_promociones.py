@@ -1,4 +1,4 @@
-"""
+﻿"""
 Tests unitarios para models/promociones.py
 Sprint 4: Firma correcta de crear_promocion, pytest.approx para floats,
           fechas validas respecto a hoy.
@@ -28,7 +28,7 @@ def _make_ctx(cur=None):
     return cur, ctx
 
 
-# ── Tests dataclass ───────────────────────────────────────────────────────────
+# â”€â”€ Tests dataclass â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_promocion_creacion():
     p = Promocion(1, "Desc verano", "porcentaje", 10.0,
@@ -50,7 +50,7 @@ def test_promocion_inactiva():
     assert p.activa is False
 
 
-# ── Tests crear_promocion ─────────────────────────────────────────────────────
+# â”€â”€ Tests crear_promocion â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_crear_tipo_invalido():
     ok, _ = crear_promocion("P", "malo", 10.0, 1, None, INICIO, FIN, 1)
@@ -109,7 +109,7 @@ def test_crear_error_bd():
         assert ok is False
 
 
-# ── Tests listar_promociones ──────────────────────────────────────────────────
+# â”€â”€ Tests listar_promociones â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_listar_todas():
     cur, ctx = _make_ctx()
@@ -125,7 +125,7 @@ def test_listar_activas():
         assert isinstance(listar_promociones(solo_activas=True), list)
 
 
-# ── Tests calcular_descuento ──────────────────────────────────────────────────
+# â”€â”€ Tests calcular_descuento â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_calcular_sin_promo():
     cur, ctx = _make_ctx()
@@ -167,12 +167,12 @@ def test_calcular_porcentaje_50k():
         assert d == pytest.approx(5000.0)
 
 
-# ── Tests activar/desactivar ──────────────────────────────────────────────────
+# â”€â”€ Tests activar/desactivar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_activar():
     cur, ctx = _make_ctx()
     with patch("models.promociones.db_cursor", ctx):
-        ok, msg = activar_desactivar_promocion(1, True)
+        ok, _ = activar_desactivar_promocion(1, True)
         assert ok is True
         assert "activada" in msg
 
@@ -180,12 +180,12 @@ def test_activar():
 def test_desactivar():
     cur, ctx = _make_ctx()
     with patch("models.promociones.db_cursor", ctx):
-        ok, msg = activar_desactivar_promocion(1, False)
+        ok, _ = activar_desactivar_promocion(1, False)
         assert ok is True
         assert "desactivada" in msg
 
 
-# ── Tests eliminar_promocion ──────────────────────────────────────────────────
+# â”€â”€ Tests eliminar_promocion â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_eliminar_ok():
     cur, ctx = _make_ctx()
@@ -200,3 +200,4 @@ def test_eliminar_falla():
     with patch("models.promociones.db_cursor", ctx):
         ok, _ = eliminar_promocion(1)
         assert ok is False
+

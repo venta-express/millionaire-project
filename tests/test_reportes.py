@@ -130,7 +130,7 @@ def test_reporte_por_vendedor_especifico():
 # â”€â”€ exportar_excel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_exportar_excel_tipo_invalido():
-    ok, msg = exportar_excel("tipo_invalido", {}, os.path.join(tempfile.gettempdir(), "test.xlsx"))
+    ok, _ = exportar_excel("tipo_invalido", {}, os.path.join(tempfile.gettempdir(), "test.xlsx"))
     assert ok is False
 
 
@@ -147,7 +147,7 @@ def test_exportar_excel_ventas():
     }
     with tempfile.TemporaryDirectory() as tmpdir:
         ruta = os.path.join(tmpdir, "reporte.xlsx")
-        ok, msg = exportar_excel("ventas", datos, ruta)
+        ok, _ = exportar_excel("ventas", datos, ruta)
         assert ok is True
         assert os.path.exists(ruta)
 
@@ -164,7 +164,7 @@ def test_exportar_excel_inventario():
     }
     with tempfile.TemporaryDirectory() as tmpdir:
         ruta = os.path.join(tmpdir, "inventario.xlsx")
-        ok, msg = exportar_excel("inventario", datos, ruta)
+        ok, _ = exportar_excel("inventario", datos, ruta)
         assert ok is True
 
 
@@ -172,14 +172,14 @@ def test_exportar_excel_vendedor():
     datos = {"vendedores": [], "detalle": []}
     with tempfile.TemporaryDirectory() as tmpdir:
         ruta = os.path.join(tmpdir, "vendedor.xlsx")
-        ok, msg = exportar_excel("vendedor", datos, ruta)
+        ok, _ = exportar_excel("vendedor", datos, ruta)
         assert ok is True
 
 
 # â”€â”€ exportar_pdf â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_exportar_pdf_tipo_invalido():
-    ok, msg = exportar_pdf("tipo_malo", {}, os.path.join(tempfile.gettempdir(), "test.pdf"))
+    ok, _ = exportar_pdf("tipo_malo", {}, os.path.join(tempfile.gettempdir(), "test.pdf"))
     assert ok is False
 
 
@@ -196,7 +196,7 @@ def test_exportar_pdf_ventas():
     }
     with tempfile.TemporaryDirectory() as tmpdir:
         ruta = os.path.join(tmpdir, "reporte.pdf")
-        ok, msg = exportar_pdf("ventas", datos, ruta)
+        ok, _ = exportar_pdf("ventas", datos, ruta)
         assert ok is True
         assert os.path.exists(ruta)
 
@@ -213,7 +213,8 @@ def test_exportar_pdf_inventario():
     }
     with tempfile.TemporaryDirectory() as tmpdir:
         ruta = os.path.join(tmpdir, "inv.pdf")
-        ok, msg = exportar_pdf("inventario", datos, ruta)
+        ok, _ = exportar_pdf("inventario", datos, ruta)
         assert ok is True
+
 
 

@@ -38,19 +38,19 @@ def test_generar_numero_factura_formato():
 
 
 def test_registrar_venta_sin_items():
-    ok, msg, _ = registrar_venta(1, 1, [], "Efectivo")
+    ok, _, _ = registrar_venta(1, 1, [], "Efectivo")
     assert ok is False
 
 
 def test_registrar_venta_metodo_invalido():
     item = ItemVenta(1, "P001", "Freno", 45000.0, 1)
-    ok, msg, _ = registrar_venta(1, 1, [item], "Cheque")
+    ok, _, _ = registrar_venta(1, 1, [item], "Cheque")
     assert ok is False
 
 
 def test_registrar_venta_transferencia_sin_ref():
     item = ItemVenta(1, "P001", "Freno", 45000.0, 1)
-    ok, msg, _ = registrar_venta(1, 1, [item], "Transferencia", referencia_pago="")
+    ok, _, _ = registrar_venta(1, 1, [item], "Transferencia", referencia_pago="")
     assert ok is False
 
 
@@ -114,6 +114,7 @@ def test_obtener_o_crear_cliente_existente():
     cur, ctx = _make_ctx()
     cur.fetchone.return_value = {"id": 1}
     with patch("models.ventas.db_cursor", ctx):
-        ok, _, cid = obtener_o_crear_cliente("123456789", "Juan")
+        ok, _, _ = obtener_o_crear_cliente("123456789", "Juan")
         assert ok is True
         assert cid == 1
+

@@ -1,4 +1,4 @@
-"""
+﻿"""
 Tests unitarios para models/backup.py
 Sprint 4: Cobertura de backup y listado de archivos.
 """
@@ -10,7 +10,7 @@ from unittest.mock import patch, MagicMock
 from models.backup import listar_backups, generar_backup
 
 
-# ── listar_backups ────────────────────────────────────────────────────────────
+# â”€â”€ listar_backups â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_listar_backups_directorio_inexistente():
     """listar_backups debe retornar lista vacia si no existe el directorio."""
@@ -71,7 +71,7 @@ def test_listar_backups_contiene_campos():
         assert "fecha" in resultado[0]
 
 
-# ── generar_backup ────────────────────────────────────────────────────────────
+# â”€â”€ generar_backup â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_generar_backup_sin_pgdump():
     """generar_backup debe retornar False si pg_dump no esta disponible."""
@@ -84,7 +84,7 @@ def test_generar_backup_sin_pgdump():
         with patch("models.backup.subprocess.run") as mock_run:
             mock_run.side_effect = FileNotFoundError("pg_dump no encontrado")
             with tempfile.TemporaryDirectory() as tmpdir:
-                ok, msg = generar_backup(tmpdir)
+                ok, _ = generar_backup(tmpdir)
                 assert ok is False
                 assert "pg_dump" in msg
 
@@ -99,5 +99,6 @@ def test_generar_backup_error_generico():
         with patch("models.backup.subprocess.run") as mock_run:
             mock_run.side_effect = OSError("permiso denegado")
             with tempfile.TemporaryDirectory() as tmpdir:
-                ok, msg = generar_backup(tmpdir)
+                ok, _ = generar_backup(tmpdir)
                 assert ok is False
+

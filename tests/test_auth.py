@@ -126,19 +126,19 @@ def test_hash_bcrypt_verificable():
 # â”€â”€ Tests iniciar_sesion â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_iniciar_sesion_campos_vacios():
-    ok, msg, u = iniciar_sesion("", "")
+    ok, _, u = iniciar_sesion("", "")
     assert ok is False
     assert u is None
 
 
 def test_iniciar_sesion_usuario_vacio():
-    ok, msg, u = iniciar_sesion("", "clave123")
+    ok, _, u = iniciar_sesion("", "clave123")
     assert ok is False
     assert u is None
 
 
 def test_iniciar_sesion_clave_vacia():
-    ok, msg, u = iniciar_sesion("admin", "")
+    ok, _, u = iniciar_sesion("admin", "")
     assert ok is False
     assert u is None
 
@@ -147,7 +147,7 @@ def test_iniciar_sesion_usuario_no_existe():
     cur, ctx = _make_ctx()
     cur.fetchone.return_value = None
     with patch("models.auth.db_cursor", ctx):
-        ok, msg, u = iniciar_sesion("noexiste", "abc")
+        ok, _, u = iniciar_sesion("noexiste", "abc")
         assert ok is False
         assert u is None
 
@@ -166,7 +166,7 @@ def test_iniciar_sesion_bloqueada():
     cur, ctx = _make_ctx()
     cur.fetchone.return_value = mock_row
     with patch("models.auth.db_cursor", ctx):
-        ok, msg, u = iniciar_sesion("juan", "cualquier")
+        ok, _, u = iniciar_sesion("juan", "cualquier")
         assert ok is False
         assert "bloqueada" in msg.lower()
 
@@ -184,7 +184,7 @@ def test_iniciar_sesion_inactiva():
     cur, ctx = _make_ctx()
     cur.fetchone.return_value = mock_row
     with patch("models.auth.db_cursor", ctx):
-        ok, msg, u = iniciar_sesion("juan", "cualquier")
+        ok, _, u = iniciar_sesion("juan", "cualquier")
         assert ok is False
         assert "inactiva" in msg.lower()
 
@@ -211,7 +211,7 @@ def test_crear_usuario_duplicado():
     ctx = MagicMock()
     ctx.side_effect = Exception("unique constraint")
     with patch("models.auth.db_cursor", ctx):
-        ok, msg = crear_usuario("123", "Juan", "juan", "clave_segura", "Vendedor")
+        ok, _ = crear_usuario("123", "Juan", "juan", "clave_segura", "Vendedor")
         assert ok is False
         # El mensaje puede venir del modelo o del except; solo validamos que falle
         assert isinstance(msg, str)
@@ -276,6 +276,7 @@ def test_listar_roles_mock():
         roles = listar_roles()
         assert isinstance(roles, list)
         assert "Gerencia" in roles
+
 
 
 

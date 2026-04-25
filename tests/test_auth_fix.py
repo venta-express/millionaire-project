@@ -1,4 +1,4 @@
-"""Tests adicionales para models/auth.py - fix variables no usadas"""
+﻿"""Tests adicionales para models/auth.py - fix variables no usadas"""
 import pytest
 from unittest.mock import patch, MagicMock
 from models.auth import hash_password, Usuario
@@ -18,7 +18,7 @@ def test_crear_usuario_rol_no_existe():
         mock_cur.fetchone.return_value = None
         mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
         mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
-        ok, msg = crear_usuario("123", "Juan", "juan", "pass", "RolInexistente")
+        ok, _ = crear_usuario("123", "Juan", "juan", "pass", "RolInexistente")
         assert ok is False
 
 
@@ -30,7 +30,7 @@ def test_editar_usuario_mock():
         mock_cur.fetchone.return_value = mock_rol
         mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
         mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
-        ok, msg = editar_usuario(1, "Juan", "Gerencia", True)
+        ok, _ = editar_usuario(1, "Juan", "Gerencia", True)
         assert ok is True
 
 
@@ -42,7 +42,7 @@ def test_editar_usuario_con_nueva_password():
         mock_cur.fetchone.return_value = mock_rol
         mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
         mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
-        ok, msg = editar_usuario(1, "Juan", "Gerencia", True, "nueva_pass")
+        ok, _ = editar_usuario(1, "Juan", "Gerencia", True, "nueva_pass")
         assert ok is True
 
 
@@ -53,5 +53,6 @@ def test_editar_usuario_rol_no_existe():
         mock_cur.fetchone.return_value = None
         mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
         mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
-        ok, msg = editar_usuario(1, "Juan", "RolInexistente", True)
+        ok, _ = editar_usuario(1, "Juan", "RolInexistente", True)
         assert ok is False
+

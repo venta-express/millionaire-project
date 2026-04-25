@@ -18,7 +18,7 @@ def test_obtener_o_crear_cliente_existente():
         mock_cur.fetchone.return_value = mock_row
         mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
         mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
-        ok, msg, cid = obtener_o_crear_cliente("123456789", "Juan")
+        ok, _, _ = obtener_o_crear_cliente("123456789", "Juan")
         assert ok is True
         assert cid == 1
 
@@ -42,7 +42,7 @@ def test_crear_venta_valida_mock():
         mock_ctx.return_value.__enter__ = MagicMock(return_value=mock_cur)
         mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
         items = [{"producto_id": 1, "cantidad": 2, "precio": 10000.0}]
-        ok, msg = crear_venta(1, 1, items, "Efectivo", 0)
+        ok, _ = crear_venta(1, 1, items, "Efectivo", 0)
         assert isinstance(ok, bool)
 
 
@@ -55,5 +55,6 @@ def test_obtener_detalle_venta_mock():
         mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
         resultado = obtener_detalle_venta(1)
         assert isinstance(resultado, list)
+
 
 

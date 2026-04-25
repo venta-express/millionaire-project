@@ -22,13 +22,13 @@ def test_cliente_creacion():
 
 def test_crear_venta_sin_items():
     from models.ventas import crear_venta
-    ok, msg = crear_venta(1, 1, [], "Efectivo", 0)
+    ok, _ = crear_venta(1, 1, [], "Efectivo", 0)
     assert ok is False
 
 
 def test_registrar_venta_sin_items():
     from models.ventas import registrar_venta
-    ok, msg, vid = registrar_venta(1, 1, [], "Efectivo")
+    ok, _, _ = registrar_venta(1, 1, [], "Efectivo")
     assert ok is False
     assert vid is None
 
@@ -36,14 +36,14 @@ def test_registrar_venta_sin_items():
 def test_registrar_venta_metodo_invalido():
     from models.ventas import registrar_venta
     item = ItemVenta(1, "P001", "Prod", 10000.0, 1)
-    ok, msg, vid = registrar_venta(1, 1, [item], "Cheque")
+    ok, _, _ = registrar_venta(1, 1, [item], "Cheque")
     assert ok is False
 
 
 def test_registrar_venta_transferencia_sin_referencia():
     from models.ventas import registrar_venta
     item = ItemVenta(1, "P001", "Prod", 10000.0, 1)
-    ok, msg, vid = registrar_venta(1, 1, [item], "Transferencia", "")
+    ok, _, _ = registrar_venta(1, 1, [item], "Transferencia", "")
     assert ok is False
 
 
@@ -60,14 +60,14 @@ def test_buscar_clientes_mock():
 
 def test_obtener_o_crear_cliente_cedula_vacia():
     from models.ventas import obtener_o_crear_cliente
-    ok, msg, cid = obtener_o_crear_cliente("", "Juan")
+    ok, _, _ = obtener_o_crear_cliente("", "Juan")
     assert ok is False
     assert cid is None
 
 
 def test_obtener_o_crear_cliente_nombre_vacio():
     from models.ventas import obtener_o_crear_cliente
-    ok, msg, cid = obtener_o_crear_cliente("123456789", "")
+    ok, _, _ = obtener_o_crear_cliente("123456789", "")
     assert ok is False
 
 
@@ -102,5 +102,6 @@ def test_listar_ventas_mock():
         mock_ctx.return_value.__exit__ = MagicMock(return_value=False)
         resultado = listar_ventas()
         assert isinstance(resultado, list)
+
 
 
