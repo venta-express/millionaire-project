@@ -1,28 +1,28 @@
-"""
-AutoParts Express - Modelo de Autenticación y Usuarios
-HU-01: Inicio de Sesión  (Sprint 1, sin cambios)
-HU-08: Gestión de Usuarios y Roles (Sprint 2 - nuevo)
+﻿"""
+AutoParts Express - Modelo de AutenticaciÃ³n y Usuarios
+HU-01: Inicio de SesiÃ³n  (Sprint 1, sin cambios)
+HU-08: GestiÃ³n de Usuarios y Roles (Sprint 2 - nuevo)
 
 Responsabilidades:
   - Autenticar usuarios (iniciar_sesion)
-  - Mantener la sesión activa global (_sesion_activa)
+  - Mantener la sesiÃ³n activa global (_sesion_activa)
   - Crear, listar, editar y desactivar usuarios (solo Gerencia)
 """
 
-# bcrypt: librería para hashing seguro de contraseñas (algoritmo Blowfish)
+# bcrypt: librerÃ­a para hashing seguro de contraseÃ±as (algoritmo Blowfish)
 import bcrypt
 
-# dataclass genera automáticamente __init__, __repr__ y __eq__ para la clase
+# dataclass genera automÃ¡ticamente __init__, __repr__ y __eq__ para la clase
 from dataclasses import dataclass
 
 # Optional indica que un valor puede ser del tipo indicado o None
 from typing import Optional
 
-# Importamos nuestro context manager de conexión a la BD
+# Importamos nuestro context manager de conexiÃ³n a la BD
 from db.connection import db_cursor
 
 
-# ── Dataclass Usuario ─────────────────────────────────────────────────────────
+# â”€â”€ Dataclass Usuario â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 @dataclass
 class Usuario:
     """Representa un usuario autenticado o listado desde la BD."""
@@ -35,35 +35,35 @@ class Usuario:
     bloqueado: bool  # True = cuenta bloqueada por intentos fallidos
 
 
-# ── Sesión global activa ──────────────────────────────────────────────────────
-# Variable módulo-nivel que guarda el usuario autenticado en la sesión actual
+# â”€â”€ SesiÃ³n global activa â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# Variable mÃ³dulo-nivel que guarda el usuario autenticado en la sesiÃ³n actual
 # None cuando no hay nadie logueado; se actualiza al loguear/desloguear
 _sesion_activa: Optional[Usuario] = None
 
 
 def get_usuario_activo() -> Optional[Usuario]:
-    """Retorna el usuario actualmente logueado, o None si no hay sesión."""
-    return _sesion_activa  # Acceso de solo lectura a la sesión global
+    """Retorna el usuario actualmente logueado, o None si no hay sesiÃ³n."""
+    return _sesion_activa  # Acceso de solo lectura a la sesiÃ³n global
 
 
 def set_usuario_activo(u: Optional[Usuario]):
-    """Establece (o limpia) el usuario de la sesión global."""
-    global _sesion_activa  # Necesario para modificar la variable de módulo
+    """Establece (o limpia) el usuario de la sesiÃ³n global."""
+    global _sesion_activa  # Necesario para modificar la variable de mÃ³dulo
     _sesion_activa = u
 
 
-# ── Constante de seguridad ────────────────────────────────────────────────────
-# Número máximo de contraseñas incorrectas antes de bloquear la cuenta
+# â”€â”€ Constante de seguridad â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# NÃºmero mÃ¡ximo de contraseÃ±as incorrectas antes de bloquear la cuenta
 MAX_INTENTOS = 3
 
 
-# ── Autenticación (HU-01) ─────────────────────────────────────────────────────
+# â”€â”€ AutenticaciÃ³n (HU-01) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 def iniciar_sesion(username: str, password: str) -> tuple[bool, str, Optional[Usuario]]:
     """
-    Valida credenciales y abre una sesión si son correctas.
+    Valida credenciales y abre una sesiÃ³n si son correctas.
     Retorna: (exito: bool, mensaje: str, usuario | None)
     """
-    # Validación básica: los campos no pueden estar vacíos
+    # ValidaciÃ³n bÃ¡sica: los campos no pueden estar vacÃ­os
     if not username.strip() or not password.strip():
         return False, "Por favor completa todos los campos.", None
 
@@ -79,19 +79,19 @@ def iniciar_sesion(username: str, password: str) -> tuple[bool, str, Optional[Us
         """, (username.strip(),))
         row = cur.fetchone()  # fetchone() retorna la primera fila o None
 
-    # Si no existe el username, respondemos con mensaje genérico (evita enumerar usuarios)
+    # Si no existe el username, respondemos con mensaje genÃ©rico (evita enumerar usuarios)
     if not row:
-        return False, "Usuario o contraseña incorrectos.", None
+        return False, "Usuario o contraseÃ±a incorrectos.", None
 
-    # Si la cuenta está bloqueada, impedimos el acceso
+    # Si la cuenta estÃ¡ bloqueada, impedimos el acceso
     if row["bloqueado"]:
-        return False, "Tu cuenta está bloqueada. Contacta al administrador.", None
+        return False, "Tu cuenta estÃ¡ bloqueada. Contacta al administrador.", None
 
-    # Si la cuenta está inactiva, también impedimos el acceso
+    # Si la cuenta estÃ¡ inactiva, tambiÃ©n impedimos el acceso
     if not row["activo"]:
-        return False, "Tu cuenta está inactiva.", None
+        return False, "Tu cuenta estÃ¡ inactiva.", None
 
-    # Comparamos la contraseña ingresada con el hash almacenado
+    # Comparamos la contraseÃ±a ingresada con el hash almacenado
     # bcrypt.checkpw() maneja el salt internamente
     pw_ok = bcrypt.checkpw(password.encode(), row["password_hash"].encode())
 
@@ -99,7 +99,7 @@ def iniciar_sesion(username: str, password: str) -> tuple[bool, str, Optional[Us
         # Incrementamos el contador de intentos fallidos
         nuevos_intentos = row["intentos_fallidos"] + 1
 
-        # Determinamos si ya se alcanzó el límite de intentos
+        # Determinamos si ya se alcanzÃ³ el lÃ­mite de intentos
         bloquear = nuevos_intentos >= MAX_INTENTOS
 
         # Actualizamos la BD con el nuevo contador y posible bloqueo
@@ -110,17 +110,17 @@ def iniciar_sesion(username: str, password: str) -> tuple[bool, str, Optional[Us
                 WHERE id = %s
             """, (nuevos_intentos, bloquear, row["id"]))
 
-        # Calculamos cuántos intentos le quedan al usuario
+        # Calculamos cuÃ¡ntos intentos le quedan al usuario
         restantes = MAX_INTENTOS - nuevos_intentos
 
         if bloquear:
             # Cuenta bloqueada definitivamente
             return False, "Cuenta bloqueada por demasiados intentos fallidos.", None
 
-        # Informamos al usuario cuántos intentos le restan
-        return False, f"Contraseña incorrecta. Intentos restantes: {restantes}.", None
+        # Informamos al usuario cuÃ¡ntos intentos le restan
+        return False, f"ContraseÃ±a incorrecta. Intentos restantes: {restantes}.", None
 
-    # ── Login exitoso ────────────────────────────────────────────────────────
+    # â”€â”€ Login exitoso â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     # Reseteamos el contador de intentos fallidos y desbloqueamos si estaba bloqueado
     with db_cursor(commit=True) as cur:
         cur.execute("""
@@ -128,7 +128,7 @@ def iniciar_sesion(username: str, password: str) -> tuple[bool, str, Optional[Us
             WHERE id = %s
         """, (row["id"],))
 
-        # Registramos la sesión en la tabla de auditoría
+        # Registramos la sesiÃ³n en la tabla de auditorÃ­a
         cur.execute("""
             INSERT INTO sesiones (usuario_id) VALUES (%s)
         """, (row["id"],))
@@ -141,35 +141,35 @@ def iniciar_sesion(username: str, password: str) -> tuple[bool, str, Optional[Us
         username=row["username"],
         rol=row["rol"],
         activo=row["activo"],
-        bloqueado=False,  # Acabamos de asegurarnos de que no está bloqueado
+        bloqueado=False,  # Acabamos de asegurarnos de que no estÃ¡ bloqueado
     )
 
-    # Guardamos el usuario en la sesión global de la aplicación
+    # Guardamos el usuario en la sesiÃ³n global de la aplicaciÃ³n
     set_usuario_activo(usuario)
 
     return True, f"Bienvenido, {usuario.nombre}.", usuario
 
 
 def cerrar_sesion():
-    """Limpia la sesión activa global al hacer logout."""
+    """Limpia la sesiÃ³n activa global al hacer logout."""
     set_usuario_activo(None)  # Poner None desloguea al usuario
 
 
-# ── Utilidades de contraseña ──────────────────────────────────────────────────
+# â”€â”€ Utilidades de contraseÃ±a â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 def hash_password(plain: str) -> str:
     """
-    Genera un hash bcrypt seguro para la contraseña en texto plano.
+    Genera un hash bcrypt seguro para la contraseÃ±a en texto plano.
     bcrypt.gensalt() genera un salt aleatorio de 12 rondas por defecto.
     """
     return bcrypt.hashpw(plain.encode(), bcrypt.gensalt()).decode()
 
 
-# ── Gestión de usuarios (HU-08 - Sprint 2) ───────────────────────────────────
+# â”€â”€ GestiÃ³n de usuarios (HU-08 - Sprint 2) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def listar_usuarios() -> list[dict]:
     """
     Retorna todos los usuarios del sistema con su rol.
-    Usado en la pantalla de gestión de usuarios (solo Gerencia).
+    Usado en la pantalla de gestiÃ³n de usuarios (solo Gerencia).
     """
     with db_cursor() as cur:
         # JOIN para traer el nombre del rol en lugar del ID
@@ -179,7 +179,7 @@ def listar_usuarios() -> list[dict]:
                    u.creado_en
             FROM usuarios u
             JOIN roles r ON r.id = u.rol_id
-            ORDER BY u.nombre  -- Orden alfabético para la tabla de la UI
+            ORDER BY u.nombre  -- Orden alfabÃ©tico para la tabla de la UI
         """)
         # Convertimos cada RealDictRow a dict plano para facilitar su uso en la UI
         return [dict(r) for r in cur.fetchall()]
@@ -193,7 +193,7 @@ def crear_usuario(cedula: str, nombre: str, username: str,
     Solo accesible para usuarios con rol 'Gerencia'.
     """
     try:
-        # Generamos el hash de la contraseña antes de guardar
+        # Generamos el hash de la contraseÃ±a antes de guardar
         ph = hash_password(password)
 
         with db_cursor(commit=True) as cur:
@@ -214,17 +214,17 @@ def crear_usuario(cedula: str, nombre: str, username: str,
         return True, "Usuario creado exitosamente."
 
     except Exception as e:
-        # Violación UNIQUE indica que ya existe cédula o username
+        # ViolaciÃ³n UNIQUE indica que ya existe cÃ©dula o username
         if "unique" in str(e).lower():
-            return False, "Ya existe un usuario con esa cédula o nombre de usuario."
+            return False, "Ya existe un usuario con esa cÃ©dula o nombre de usuario."
         return False, f"Error: {e}"
 
 
 def editar_usuario(uid: int, nombre: str, rol_nombre: str,
-                   activo: bool, nueva_password: str = "") -> tuple[bool, str]:
+                   activo: bool, nueva_clave: str = "") -> tuple[bool, str]:
     """
     Actualiza los datos de un usuario existente.
-    Si nueva_password es una cadena no vacía, también cambia la contraseña.
+    Si nueva_clave es una cadena no vacÃ­a, tambiÃ©n cambia la contraseÃ±a.
     Retorna (exito: bool, mensaje: str).
     """
     try:
@@ -235,9 +235,9 @@ def editar_usuario(uid: int, nombre: str, rol_nombre: str,
             if not rol:
                 return False, f"Rol '{rol_nombre}' no encontrado."
 
-            if nueva_password.strip():
-                # Si se proporcionó nueva contraseña, la incluimos en el UPDATE
-                ph = hash_password(nueva_password)
+            if nueva_clave.strip():
+                # Si se proporcionÃ³ nueva contraseÃ±a, la incluimos en el UPDATE
+                ph = hash_password(nueva_clave)
                 cur.execute("""
                     UPDATE usuarios
                     SET nombre=%s, rol_id=%s, activo=%s, password_hash=%s,
@@ -245,7 +245,7 @@ def editar_usuario(uid: int, nombre: str, rol_nombre: str,
                     WHERE id=%s
                 """, (nombre.strip(), rol["id"], activo, ph, uid))
             else:
-                # Sin nueva contraseña, solo actualizamos los demás campos
+                # Sin nueva contraseÃ±a, solo actualizamos los demÃ¡s campos
                 cur.execute("""
                     UPDATE usuarios
                     SET nombre=%s, rol_id=%s, activo=%s
@@ -261,7 +261,7 @@ def editar_usuario(uid: int, nombre: str, rol_nombre: str,
 def desbloquear_usuario(uid: int) -> tuple[bool, str]:
     """
     Desbloquea una cuenta y resetea el contador de intentos fallidos.
-    Útil cuando el administrador quiere rehabilitar una cuenta bloqueada.
+    Ãštil cuando el administrador quiere rehabilitar una cuenta bloqueada.
     """
     with db_cursor(commit=True) as cur:
         cur.execute("""
@@ -281,3 +281,4 @@ def listar_roles() -> list[str]:
         cur.execute("SELECT nombre FROM roles ORDER BY nombre")
         # Extraemos solo el campo 'nombre' de cada fila
         return [r["nombre"] for r in cur.fetchall()]
+
