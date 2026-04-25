@@ -78,7 +78,7 @@ def test_registrar_proveedor_solo_espacios():
 
 
 def test_registrar_proveedor_exitoso():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     with patch("models.compras.db_cursor", ctx):
         ok, _ = registrar_proveedor("Repuestos SA", "Juan", "300", "rep@sa.com", "900")
         assert ok is True
@@ -97,7 +97,7 @@ def test_registrar_proveedor_nit_duplicado():
 def test_listar_proveedores_activos():
     mock_row = {"id": 1, "nombre": "Prov SA", "contacto": "Juan",
                 "telefono": "300", "email": "p@p.com", "nit": "900", "activo": True}
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchall.return_value = [mock_row]
     with patch("models.compras.db_cursor", ctx):
         resultado = listar_proveedores(solo_activos=True)
@@ -107,7 +107,7 @@ def test_listar_proveedores_activos():
 def test_listar_proveedores_todos():
     mock_row = {"id": 1, "nombre": "Prov SA", "contacto": "Juan",
                 "telefono": "300", "email": "p@p.com", "nit": "900", "activo": False}
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchall.return_value = [mock_row]
     with patch("models.compras.db_cursor", ctx):
         resultado = listar_proveedores(solo_activos=False)
@@ -126,7 +126,7 @@ def test_registrar_pedido_fecha_pasada():
 
 
 def test_registrar_pedido_exitoso():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchone.return_value = {"id": 1}
     with patch("models.compras.db_cursor", ctx):
         fecha_futura = date(2030, 12, 31)
@@ -138,7 +138,7 @@ def test_registrar_pedido_exitoso():
 # â”€â”€ Tests listar_pedidos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_listar_pedidos_sin_filtro():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchall.return_value = []
     with patch("models.compras.db_cursor", ctx):
         resultado = listar_pedidos()
@@ -146,7 +146,7 @@ def test_listar_pedidos_sin_filtro():
 
 
 def test_listar_pedidos_con_estado():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchall.return_value = []
     with patch("models.compras.db_cursor", ctx):
         resultado = listar_pedidos(estado="Pendiente")
@@ -161,7 +161,7 @@ def test_actualizar_estado_pedido_invalido():
 
 
 def test_actualizar_estado_pedido_valido():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     with patch("models.compras.db_cursor", ctx):
         ok, _ = actualizar_estado_pedido(1, "Recibido")
         assert ok is True
@@ -170,7 +170,7 @@ def test_actualizar_estado_pedido_valido():
 # â”€â”€ Tests pedidos_pendientes_vencidos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_pedidos_pendientes_vencidos_mock():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchall.return_value = []
     with patch("models.compras.db_cursor", ctx):
         resultado = pedidos_pendientes_vencidos()
@@ -185,7 +185,7 @@ def test_actualizar_proveedor_nombre_vacio():
 
 
 def test_actualizar_proveedor_exitoso():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     with patch("models.compras.db_cursor", ctx):
         ok, _ = actualizar_proveedor(1, "Nuevo Nombre", "Cont", "Tel", "Email")
         assert ok is True
@@ -194,10 +194,11 @@ def test_actualizar_proveedor_exitoso():
 # â”€â”€ Tests desactivar_proveedor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_desactivar_proveedor_mock():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     with patch("models.compras.db_cursor", ctx):
         ok, _ = desactivar_proveedor(1)
         assert ok is True
+
 
 
 

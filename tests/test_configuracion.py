@@ -1,4 +1,4 @@
-"""
+﻿"""
 Tests unitarios para models/configuracion.py
 Sprint 4: Cobertura de configuracion del sistema.
 """
@@ -19,7 +19,7 @@ def _make_ctx(cur=None):
     return cur, ctx
 
 
-# ── obtener_config ────────────────────────────────────────────────────────────
+# â”€â”€ obtener_config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_obtener_config_default():
     """obtener_config debe retornar default si BD falla."""
@@ -33,7 +33,7 @@ def test_obtener_config_default():
 def test_obtener_config_existente():
     """obtener_config debe retornar el valor de la BD."""
     mock_row = {"valor": "AutoParts Express"}
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchone.return_value = mock_row
     with patch("models.configuracion.db_cursor", ctx):
         resultado = obtener_config("empresa_nombre")
@@ -42,14 +42,14 @@ def test_obtener_config_existente():
 
 def test_obtener_config_none_retorna_default():
     """obtener_config debe retornar default si no hay fila."""
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchone.return_value = None
     with patch("models.configuracion.db_cursor", ctx):
         resultado = obtener_config("no_existe", "default")
         assert resultado == "default"
 
 
-# ── obtener_todas ─────────────────────────────────────────────────────────────
+# â”€â”€ obtener_todas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_obtener_todas_mock():
     """obtener_todas debe retornar lista de configuraciones."""
@@ -57,7 +57,7 @@ def test_obtener_todas_mock():
         {"id": 1, "clave": "empresa_nombre", "valor": "AutoParts",
          "descripcion": "Nombre", "actualizado_en": None},
     ]
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchall.return_value = mock_rows
     with patch("models.configuracion.db_cursor", ctx):
         resultado = obtener_todas()
@@ -67,18 +67,18 @@ def test_obtener_todas_mock():
 
 def test_obtener_todas_vacia():
     """obtener_todas con tabla vacia retorna lista vacia."""
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchall.return_value = []
     with patch("models.configuracion.db_cursor", ctx):
         resultado = obtener_todas()
         assert resultado == []
 
 
-# ── actualizar_config ─────────────────────────────────────────────────────────
+# â”€â”€ actualizar_config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_actualizar_config_exitoso():
     """actualizar_config debe retornar True si la BD funciona."""
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     with patch("models.configuracion.db_cursor", ctx):
         resultado = actualizar_config("empresa_nombre", "Nuevo Nombre")
         assert resultado is True
@@ -93,7 +93,7 @@ def test_actualizar_config_falla():
         assert resultado is False
 
 
-# ── obtener_info_empresa ──────────────────────────────────────────────────────
+# â”€â”€ obtener_info_empresa â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_obtener_info_empresa_mock():
     """obtener_info_empresa debe retornar dict con datos de empresa."""
@@ -101,7 +101,7 @@ def test_obtener_info_empresa_mock():
         {"clave": "empresa_nombre", "valor": "AutoParts Express"},
         {"clave": "empresa_nit", "valor": "900000000-0"},
     ]
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchall.return_value = mock_rows
     with patch("models.configuracion.db_cursor", ctx):
         resultado = obtener_info_empresa()
@@ -110,9 +110,10 @@ def test_obtener_info_empresa_mock():
 
 
 def test_obtener_info_empresa_vacia():
-    """obtener_info_empresa con BD vacia retorna dict vacío o con defaults."""
-    cur, ctx = _make_ctx()
+    """obtener_info_empresa con BD vacia retorna dict vacÃ­o o con defaults."""
+    _, ctx = _make_ctx()
     cur.fetchall.return_value = []
     with patch("models.configuracion.db_cursor", ctx):
         resultado = obtener_info_empresa()
         assert isinstance(resultado, dict)
+

@@ -77,7 +77,7 @@ def test_registrar_stock_minimo_negativo():
 
 
 def test_registrar_exitoso():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchone.return_value = {"id": 1}
     with patch("models.inventario.db_cursor", ctx):
         ok, _ = registrar_producto("P001", "Freno", "Desc", 1, 45000.0, 10, 5)
@@ -114,7 +114,7 @@ def test_actualizar_precio_negativo():
 
 
 def test_actualizar_exitoso():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     with patch("models.inventario.db_cursor", ctx):
         ok, _ = actualizar_producto(1, "Freno Upd", "Desc", 1, 50000.0, 20)
         assert ok is True
@@ -141,7 +141,7 @@ def test_ajustar_stock_cero():
 
 
 def test_ajustar_stock_exitoso():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     with patch("models.inventario.db_cursor", ctx):
         ok, _ = ajustar_stock(1, 50)
         assert ok is True
@@ -150,7 +150,7 @@ def test_ajustar_stock_exitoso():
 # â”€â”€ desactivar_producto â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_desactivar_exitoso():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     with patch("models.inventario.db_cursor", ctx):
         ok, _ = desactivar_producto(1)
         assert ok is True
@@ -167,35 +167,35 @@ def test_desactivar_error_bd():
 # â”€â”€ buscar_productos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_buscar_sin_filtros():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchall.return_value = []
     with patch("models.inventario.db_cursor", ctx):
         assert isinstance(buscar_productos(), list)
 
 
 def test_buscar_con_texto():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchall.return_value = []
     with patch("models.inventario.db_cursor", ctx):
         assert isinstance(buscar_productos(texto="freno"), list)
 
 
 def test_buscar_con_categoria():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchall.return_value = []
     with patch("models.inventario.db_cursor", ctx):
         assert isinstance(buscar_productos(categoria_id=1), list)
 
 
 def test_buscar_solo_activos():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchall.return_value = []
     with patch("models.inventario.db_cursor", ctx):
         assert isinstance(buscar_productos(solo_activos=True), list)
 
 
 def test_buscar_texto_y_categoria():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchall.return_value = []
     with patch("models.inventario.db_cursor", ctx):
         assert isinstance(buscar_productos(texto="freno", categoria_id=1), list)
@@ -208,7 +208,7 @@ def test_obtener_existente():
                 "descripcion": "", "categoria": "Frenos",
                 "categoria_id": 1, "precio_unitario": 45000.0,
                 "stock_actual": 10, "stock_minimo": 5, "activo": True}
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchone.return_value = mock_row
     with patch("models.inventario.db_cursor", ctx):
         p = obtener_producto(1)
@@ -217,7 +217,7 @@ def test_obtener_existente():
 
 
 def test_obtener_no_existe():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchone.return_value = None
     with patch("models.inventario.db_cursor", ctx):
         assert obtener_producto(999) is None
@@ -226,7 +226,7 @@ def test_obtener_no_existe():
 # â”€â”€ productos_stock_bajo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_stock_bajo_mock():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchall.return_value = []
     with patch("models.inventario.db_cursor", ctx):
         assert isinstance(productos_stock_bajo(), list)
@@ -235,7 +235,7 @@ def test_stock_bajo_mock():
 # â”€â”€ listar_categorias â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_listar_categorias_mock():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchall.return_value = [{"id": 1, "nombre": "Frenos"}]
     with patch("models.inventario.db_cursor", ctx):
         cats = listar_categorias()
@@ -246,10 +246,11 @@ def test_listar_categorias_mock():
 # â”€â”€ obtener_alertas_no_vistas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_alertas_no_vistas_mock():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchall.return_value = []
     with patch("models.inventario.db_cursor", ctx):
         assert isinstance(obtener_alertas_no_vistas(), list)
+
 
 
 

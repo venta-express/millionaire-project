@@ -126,28 +126,28 @@ def test_hash_bcrypt_verificable():
 # â”€â”€ Tests iniciar_sesion â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_iniciar_sesion_campos_vacios():
-    ok, _, u = iniciar_sesion("", "")
+    ok, _, _ = iniciar_sesion("", "")
     assert ok is False
     assert u is None
 
 
 def test_iniciar_sesion_usuario_vacio():
-    ok, _, u = iniciar_sesion("", "clave123")
+    ok, _, _ = iniciar_sesion("", "clave123")
     assert ok is False
     assert u is None
 
 
 def test_iniciar_sesion_clave_vacia():
-    ok, _, u = iniciar_sesion("admin", "")
+    ok, _, _ = iniciar_sesion("admin", "")
     assert ok is False
     assert u is None
 
 
 def test_iniciar_sesion_usuario_no_existe():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchone.return_value = None
     with patch("models.auth.db_cursor", ctx):
-        ok, _, u = iniciar_sesion("noexiste", "abc")
+        ok, _, _ = iniciar_sesion("noexiste", "abc")
         assert ok is False
         assert u is None
 
@@ -163,10 +163,10 @@ def test_iniciar_sesion_bloqueada():
         "activo": True, "bloqueado": True,
         "intentos_fallidos": 3, "rol": "Vendedor",
     }
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchone.return_value = mock_row
     with patch("models.auth.db_cursor", ctx):
-        ok, _, u = iniciar_sesion("juan", "cualquier")
+        ok, _, _ = iniciar_sesion("juan", "cualquier")
         assert ok is False
         assert "bloqueada" in msg.lower()
 
@@ -181,10 +181,10 @@ def test_iniciar_sesion_inactiva():
         "activo": False, "bloqueado": False,
         "intentos_fallidos": 0, "rol": "Vendedor",
     }
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchone.return_value = mock_row
     with patch("models.auth.db_cursor", ctx):
-        ok, _, u = iniciar_sesion("juan", "cualquier")
+        ok, _, _ = iniciar_sesion("juan", "cualquier")
         assert ok is False
         assert "inactiva" in msg.lower()
 
@@ -192,7 +192,7 @@ def test_iniciar_sesion_inactiva():
 # â”€â”€ Tests crear_usuario â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_crear_usuario_exitoso():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchone.return_value = {"id": 2}
     with patch("models.auth.db_cursor", ctx):
         ok, _ = crear_usuario("123", "Juan", "juan", "clave_segura", "Vendedor")
@@ -200,7 +200,7 @@ def test_crear_usuario_exitoso():
 
 
 def test_crear_usuario_rol_inexistente():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchone.return_value = None
     with patch("models.auth.db_cursor", ctx):
         ok, _ = crear_usuario("123", "Juan", "juan", "clave_segura", "RolInexistente")
@@ -220,7 +220,7 @@ def test_crear_usuario_duplicado():
 # â”€â”€ Tests editar_usuario â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_editar_usuario_exitoso():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchone.return_value = {"id": 2}
     with patch("models.auth.db_cursor", ctx):
         ok, _ = editar_usuario(1, "Nuevo Nombre", "Vendedor", True)
@@ -228,7 +228,7 @@ def test_editar_usuario_exitoso():
 
 
 def test_editar_usuario_nueva_clave():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchone.return_value = {"id": 2}
     with patch("models.auth.db_cursor", ctx):
         ok, _ = editar_usuario(1, "Nombre", "Vendedor", True, nueva_clave="clave_nueva_ok")
@@ -236,7 +236,7 @@ def test_editar_usuario_nueva_clave():
 
 
 def test_editar_usuario_rol_inexistente():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchone.return_value = None
     with patch("models.auth.db_cursor", ctx):
         ok, _ = editar_usuario(1, "Nombre", "RolMalo", True)
@@ -246,7 +246,7 @@ def test_editar_usuario_rol_inexistente():
 # â”€â”€ Tests desbloquear_usuario â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_desbloquear_usuario():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     with patch("models.auth.db_cursor", ctx):
         ok, _ = desbloquear_usuario(1)
         assert ok is True
@@ -260,7 +260,7 @@ def test_listar_usuarios_mock():
         "username": "juan", "rol": "Gerencia",
         "activo": True, "bloqueado": False,
     }
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchall.return_value = [mock_row]
     with patch("models.auth.db_cursor", ctx):
         resultado = listar_usuarios()
@@ -270,12 +270,13 @@ def test_listar_usuarios_mock():
 # â”€â”€ Tests listar_roles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_listar_roles_mock():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchall.return_value = [{"nombre": "Gerencia"}, {"nombre": "Vendedor"}]
     with patch("models.auth.db_cursor", ctx):
         roles = listar_roles()
         assert isinstance(roles, list)
         assert "Gerencia" in roles
+
 
 
 

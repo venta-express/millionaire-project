@@ -88,14 +88,14 @@ def test_crear_nombre_vacio():
 
 
 def test_crear_exitosa_producto():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     with patch("models.promociones.db_cursor", ctx):
         ok, _ = crear_promocion("Promo", "porcentaje", 10.0, 1, None, INICIO, FIN, 1)
         assert ok is True
 
 
 def test_crear_exitosa_categoria():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     with patch("models.promociones.db_cursor", ctx):
         ok, _ = crear_promocion("Promo cat", "valor_fijo", 5000.0, None, 2, INICIO, FIN, 1)
         assert ok is True
@@ -112,14 +112,14 @@ def test_crear_error_bd():
 # â”€â”€ Tests listar_promociones â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_listar_todas():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchall.return_value = []
     with patch("models.promociones.db_cursor", ctx):
         assert isinstance(listar_promociones(), list)
 
 
 def test_listar_activas():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchall.return_value = []
     with patch("models.promociones.db_cursor", ctx):
         assert isinstance(listar_promociones(solo_activas=True), list)
@@ -128,7 +128,7 @@ def test_listar_activas():
 # â”€â”€ Tests calcular_descuento â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_calcular_sin_promo():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchone.return_value = None
     with patch("models.promociones.db_cursor", ctx):
         d, n = calcular_descuento(1, 50000.0)
@@ -137,7 +137,7 @@ def test_calcular_sin_promo():
 
 
 def test_calcular_porcentaje():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchone.return_value = {
         "nombre": "D10", "tipo_descuento": "porcentaje", "valor": 10.0
     }
@@ -148,7 +148,7 @@ def test_calcular_porcentaje():
 
 
 def test_calcular_valor_fijo():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchone.return_value = {
         "nombre": "D5k", "tipo_descuento": "valor_fijo", "valor": 5000.0
     }
@@ -158,7 +158,7 @@ def test_calcular_valor_fijo():
 
 
 def test_calcular_porcentaje_50k():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchone.return_value = {
         "nombre": "D10", "tipo_descuento": "porcentaje", "valor": 10.0
     }
@@ -170,7 +170,7 @@ def test_calcular_porcentaje_50k():
 # â”€â”€ Tests activar/desactivar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_activar():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     with patch("models.promociones.db_cursor", ctx):
         ok, _ = activar_desactivar_promocion(1, True)
         assert ok is True
@@ -178,7 +178,7 @@ def test_activar():
 
 
 def test_desactivar():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     with patch("models.promociones.db_cursor", ctx):
         ok, _ = activar_desactivar_promocion(1, False)
         assert ok is True
@@ -188,7 +188,7 @@ def test_desactivar():
 # â”€â”€ Tests eliminar_promocion â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_eliminar_ok():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     with patch("models.promociones.db_cursor", ctx):
         ok, _ = eliminar_promocion(1)
         assert ok is True
@@ -200,4 +200,5 @@ def test_eliminar_falla():
     with patch("models.promociones.db_cursor", ctx):
         ok, _ = eliminar_promocion(1)
         assert ok is False
+
 

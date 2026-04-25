@@ -45,28 +45,28 @@ def test_hash_bcrypt_verificable():
 
 def test_iniciar_sesion_campos_vacios():
     from models.auth import iniciar_sesion
-    ok, _, u = iniciar_sesion("", "")
+    ok, _, _ = iniciar_sesion("", "")
     assert ok is False
 
 
 def test_iniciar_sesion_usuario_vacio():
     from models.auth import iniciar_sesion
-    ok, _, u = iniciar_sesion("", "clave123")
+    ok, _, _ = iniciar_sesion("", "clave123")
     assert ok is False
 
 
 def test_iniciar_sesion_clave_vacia():
     from models.auth import iniciar_sesion
-    ok, _, u = iniciar_sesion("admin", "")
+    ok, _, _ = iniciar_sesion("admin", "")
     assert ok is False
 
 
 def test_iniciar_sesion_usuario_no_existe():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchone.return_value = None
     with patch("models.auth.db_cursor", ctx):
         from models.auth import iniciar_sesion
-        ok, _, u = iniciar_sesion("noexiste", "abc")
+        ok, _, _ = iniciar_sesion("noexiste", "abc")
         assert ok is False
         assert u is None
 
@@ -81,11 +81,11 @@ def test_iniciar_sesion_bloqueada():
         "activo": True, "bloqueado": True,
         "intentos_fallidos": 3, "rol": "Vendedor",
     }
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchone.return_value = mock_row
     with patch("models.auth.db_cursor", ctx):
         from models.auth import iniciar_sesion
-        ok, _, u = iniciar_sesion("juan", "cualquier")
+        ok, _, _ = iniciar_sesion("juan", "cualquier")
         assert ok is False
         assert "bloqueada" in msg.lower()
 
@@ -100,17 +100,17 @@ def test_iniciar_sesion_inactiva():
         "activo": False, "bloqueado": False,
         "intentos_fallidos": 0, "rol": "Vendedor",
     }
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchone.return_value = mock_row
     with patch("models.auth.db_cursor", ctx):
         from models.auth import iniciar_sesion
-        ok, _, u = iniciar_sesion("juan", "cualquier")
+        ok, _, _ = iniciar_sesion("juan", "cualquier")
         assert ok is False
         assert "inactiva" in msg.lower()
 
 
 def test_crear_usuario_exitoso():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchone.return_value = {"id": 2}
     with patch("models.auth.db_cursor", ctx):
         from models.auth import crear_usuario
@@ -119,7 +119,7 @@ def test_crear_usuario_exitoso():
 
 
 def test_crear_usuario_rol_inexistente():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchone.return_value = None
     with patch("models.auth.db_cursor", ctx):
         from models.auth import crear_usuario
@@ -140,7 +140,7 @@ def test_crear_usuario_duplicado():
 
 
 def test_editar_usuario_exitoso():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchone.return_value = {"id": 2}
     with patch("models.auth.db_cursor", ctx):
         from models.auth import editar_usuario
@@ -149,7 +149,7 @@ def test_editar_usuario_exitoso():
 
 
 def test_editar_usuario_nueva_clave():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchone.return_value = {"id": 2}
     with patch("models.auth.db_cursor", ctx):
         from models.auth import editar_usuario
@@ -158,7 +158,7 @@ def test_editar_usuario_nueva_clave():
 
 
 def test_editar_usuario_rol_inexistente():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchone.return_value = None
     with patch("models.auth.db_cursor", ctx):
         from models.auth import editar_usuario
@@ -167,7 +167,7 @@ def test_editar_usuario_rol_inexistente():
 
 
 def test_desbloquear_usuario():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     with patch("models.auth.db_cursor", ctx):
         from models.auth import desbloquear_usuario
         ok, _ = desbloquear_usuario(1)
@@ -175,7 +175,7 @@ def test_desbloquear_usuario():
 
 
 def test_listar_roles_mock():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchall.return_value = [{"nombre": "Gerencia"}, {"nombre": "Vendedor"}]
     with patch("models.auth.db_cursor", ctx):
         from models.auth import listar_roles
@@ -185,7 +185,6 @@ def test_listar_roles_mock():
 
 
 # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-#  VENTAS
 # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 def test_item_subtotal_unitario():
@@ -227,7 +226,7 @@ def test_registrar_venta_lista_vacia():
 
 
 def test_buscar_clientes_mock():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchall.return_value = []
     with patch("models.ventas.db_cursor", ctx):
         from models.ventas import buscar_clientes
@@ -237,7 +236,7 @@ def test_buscar_clientes_mock():
 def test_buscar_cliente_cedula_existe():
     mock_row = {"id": 1, "cedula": "123", "nombre": "Juan",
                 "telefono": "300", "email": "j@j.com"}
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchone.return_value = mock_row
     with patch("models.ventas.db_cursor", ctx):
         from models.ventas import buscar_cliente_por_cedula
@@ -245,7 +244,7 @@ def test_buscar_cliente_cedula_existe():
 
 
 def test_buscar_cliente_cedula_no_existe():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchone.return_value = None
     with patch("models.ventas.db_cursor", ctx):
         from models.ventas import buscar_cliente_por_cedula
@@ -260,7 +259,7 @@ def test_obtener_venta_mock():
         "referencia_pago": "", "notas": "", "estado": "Completada",
         "fecha_hora": datetime.now(),
     }
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchone.return_value = mock_row
     with patch("models.ventas.db_cursor", ctx):
         from models.ventas import obtener_venta
@@ -268,7 +267,7 @@ def test_obtener_venta_mock():
 
 
 def test_historial_cliente_mock():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchall.return_value = []
     with patch("models.ventas.db_cursor", ctx):
         from models.ventas import historial_cliente
@@ -276,7 +275,7 @@ def test_historial_cliente_mock():
 
 
 def test_buscar_clientes_historial_mock():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchall.return_value = []
     with patch("models.ventas.db_cursor", ctx):
         from models.ventas import buscar_clientes_historial
@@ -284,13 +283,14 @@ def test_buscar_clientes_historial_mock():
 
 
 def test_obtener_o_crear_cliente_existente():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchone.return_value = {"id": 1}
     with patch("models.ventas.db_cursor", ctx):
         from models.ventas import obtener_o_crear_cliente
         ok, _, _ = obtener_o_crear_cliente("123456789", "Juan")
         assert ok is True
         assert cid == 1
+
 
 
 

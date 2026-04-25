@@ -74,7 +74,7 @@ def test_registrar_devolucion_exitosa():
     la primera para el contador interno del numero de devolucion,
     la segunda para el RETURNING id del INSERT.
     """
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchone.side_effect = [
         {"total": 5},   # _generar_numero_dev: conteo existente
         {"id": 1},      # INSERT RETURNING id
@@ -97,7 +97,7 @@ def test_registrar_devolucion_error_bd():
 # â”€â”€ Tests listar_devoluciones â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_listar_devoluciones_sin_filtros():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchall.return_value = []
     with patch("models.devoluciones.db_cursor", ctx):
         resultado = listar_devoluciones()
@@ -105,7 +105,7 @@ def test_listar_devoluciones_sin_filtros():
 
 
 def test_listar_devoluciones_por_estado():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchall.return_value = []
     with patch("models.devoluciones.db_cursor", ctx):
         resultado = listar_devoluciones(estado="Pendiente")
@@ -113,7 +113,7 @@ def test_listar_devoluciones_por_estado():
 
 
 def test_listar_devoluciones_por_proveedor():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchall.return_value = []
     with patch("models.devoluciones.db_cursor", ctx):
         resultado = listar_devoluciones(proveedor_id=1)
@@ -121,7 +121,7 @@ def test_listar_devoluciones_por_proveedor():
 
 
 def test_listar_devoluciones_ambos_filtros():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     cur.fetchall.return_value = []
     with patch("models.devoluciones.db_cursor", ctx):
         resultado = listar_devoluciones(estado="Procesada", proveedor_id=2)
@@ -136,14 +136,14 @@ def test_actualizar_estado_devolucion_invalido():
 
 
 def test_actualizar_estado_devolucion_procesada():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     with patch("models.devoluciones.db_cursor", ctx):
         ok, _ = actualizar_estado_devolucion(1, "Procesada")
         assert ok is True
 
 
 def test_actualizar_estado_devolucion_rechazada():
-    cur, ctx = _make_ctx()
+    _, ctx = _make_ctx()
     with patch("models.devoluciones.db_cursor", ctx):
         ok, _ = actualizar_estado_devolucion(1, "Rechazada")
         assert ok is True
@@ -155,4 +155,5 @@ def test_actualizar_estado_devolucion_error_bd():
     with patch("models.devoluciones.db_cursor", ctx):
         ok, _ = actualizar_estado_devolucion(1, "Procesada")
         assert ok is False
+
 
