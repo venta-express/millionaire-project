@@ -1,4 +1,4 @@
-name: SonarCloud Analysis
+﻿name: SonarCloud Analysis
 on:
   push:
     branches:
@@ -16,15 +16,13 @@ jobs:
         with:
           fetch-depth: 0
       - name: Set up Python
-        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2c
+        uses: actions/setup-python@42375524a5b77d6c194e8f4ff41d9f640cf4e1e5
         with:
           python-version: '3.13'
       - name: Install dependencies
-        run: |
-          pip install pytest pytest-cov psycopg2-binary bcrypt openpyxl reportlab
+        run: pip install pytest pytest-cov psycopg2-binary bcrypt openpyxl reportlab
       - name: Run tests with coverage
-        run: |
-          pytest tests/ --cov=. --cov-report=xml --cov-report=term-missing -v || true
+        run: pytest tests/ --cov=. --cov-report=xml -v || true
       - name: SonarCloud Scan
         uses: sonarsource/sonarqube-scan-action@aa494459d7c39c106cc77b166de8b4250a32bb97
         env:
