@@ -1,0 +1,204 @@
+-- ============================================================
+--  AutoParts Express - Esquema de Base de Datos - Sprint 3
+--  Acumulativo: Sprint 1 + Sprint 2 + Sprint 3
+--  Nuevas tablas: devoluciones, promociones
+--  Columna nueva: venta_detalles.descuento_item
+-- ============================================================
+
+-- ── Roles del sistema ─────────────────────────────────────────────────────────
+-- Tres roles fijos: Gerencia (acceso total), Vendedor, Inventario
+CREATE TABLE IF NOT EXISTS roles (
+    id          SERIAL PRIMARY KEY,
+    nombre      VARCHAR(50) UNIQUE NOT NULL,
+    descripcion TEXT
+);
+
+-- ── Usuarios ──────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS usuarios (
+    id                SERIAL PRIMARY KEY,
+    cedula            VARCHAR(20)  UNIQUE NOT NULL,
+    nombre            VARCHAR(100) NOT NULL,
+    username          VARCHAR(50)  UNIQUE NOT NULL,
+    password_hash     VARCHAR(255) NOT NULL,
+    rol_id            INTEGER REFERENCES roles(id),
+    activo            BOOLEAN DEFAULT TRUE,
+    intentos_fallidos INTEGER DEFAULT 0,
+    bloqueado         BOOLEAN DEFAULT FALSE,
+    creado_en         TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ── Sesiones (auditoría de login) ────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS sesiones (
+    id         SERIAL PRIMARY KEY,
+    usuario_id INTEGER REFERENCES usuarios(id),
+    inicio     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fin        TIMESTAMP,
+    ip         VARCHAR(45)
+);
+
+-- ── Categorías de productos ───────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS categorias (
+    id     SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) UNIQUE NOT NULL
+);
+
+-- ── Productos / Inventario ────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS productos (
+    id              SERIAL PRIMARY KEY,
+    codigo          VARCHAR(50)   UNIQUE NOT NULL,
+    nombre          VARCHAR(150)  NOT NULL,
+    descripcion     TEXT,
+    categoria_id    INTEGER REFERENCES categorias(id),
+    precio_unitario NUMERIC(12,2) NOT NULL CHECK (precio_unitario >= 0),
+    stock_actual    INTEGER NOT NULL DEFAULT 0 CHECK (stock_actual >= 0),
+    stock_minimo    INTEGER NOT NULL DEFAULT 0,
+    activo          BOOLEAN DEFAULT TRUE,
+    creado_en       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ── Clientes ──────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS clientes (
+    id        SERIAL PRIMARY KEY,
+    cedula    VARCHAR(20)  UNIQUE NOT NULL,
+    nombre    VARCHAR(150) NOT NULL,
+    telefono  VARCHAR(20),
+    email     VARCHAR(100),
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ── Ventas (cabecera) ─────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS ventas (
+    id              SERIAL PRIMARY KEY,
+    numero_factura  VARCHAR(20) UNIQUE NOT NULL,
+    cliente_id      INTEGER REFERENCES clientes(id),
+    vendedor_id     INTEGER REFERENCES usuarios(id),
+    fecha_hora      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    subtotal        NUMERIC(12,2) NOT NULL DEFAULT 0,
+    descuento       NUMERIC(12,2) NOT NULL DEFAULT 0,  -- descuento total aplicado
+    total           NUMERIC(12,2) NOT NULL DEFAULT 0,
+    metodo_pago     VARCHAR(30) NOT NULL,
+    referencia_pago VARCHAR(100),
+    estado          VARCHAR(20) DEFAULT 'Completada',
+    notas           TEXT
+);
+
+-- ── Detalle de ventas ─────────────────────────────────────────────────────────
+-- Sprint 3: agrega descuento_item para registrar el descuento por promoción
+CREATE TABLE IF NOT EXISTS venta_detalles (
+    id              SERIAL PRIMARY KEY,
+    venta_id        INTEGER REFERENCES ventas(id) ON DELETE CASCADE,
+    producto_id     INTEGER REFERENCES productos(id),
+    cantidad        INTEGER NOT NULL CHECK (cantidad > 0),
+    precio_unitario NUMERIC(12,2) NOT NULL,
+    descuento_item  NUMERIC(12,2) NOT NULL DEFAULT 0,  -- NUEVO Sprint 3
+    subtotal        NUMERIC(12,2) NOT NULL
+);
+
+-- ── Proveedores ───────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS proveedores (
+    id        SERIAL PRIMARY KEY,
+    nombre    VARCHAR(150) NOT NULL,
+    contacto  VARCHAR(100),
+    telefono  VARCHAR(30),
+    email     VARCHAR(100),
+    nit       VARCHAR(30) UNIQUE,
+    activo    BOOLEAN DEFAULT TRUE,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ── Pedidos a proveedores ─────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS pedidos (
+    id             SERIAL PRIMARY KEY,
+    numero_pedido  VARCHAR(30) UNIQUE NOT NULL,
+    proveedor_id   INTEGER REFERENCES proveedores(id),
+    usuario_id     INTEGER REFERENCES usuarios(id),
+    fecha_pedido   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_estimada DATE NOT NULL,
+    estado         VARCHAR(20) DEFAULT 'Pendiente',
+    notas          TEXT
+);
+
+-- ── Detalle de pedidos ────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS pedido_detalles (
+    id          SERIAL PRIMARY KEY,
+    pedido_id   INTEGER REFERENCES pedidos(id) ON DELETE CASCADE,
+    producto_id INTEGER REFERENCES productos(id),
+    cantidad    INTEGER NOT NULL CHECK (cantidad > 0),
+    precio_ref  NUMERIC(12,2)
+);
+
+-- ── Alertas de stock ──────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS alertas_stock (
+    id           SERIAL PRIMARY KEY,
+    producto_id  INTEGER REFERENCES productos(id),
+    stock_actual INTEGER NOT NULL,
+    stock_minimo INTEGER NOT NULL,
+    generada_en  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    vista        BOOLEAN DEFAULT FALSE
+);
+
+-- ── SPRINT 3: Devoluciones a proveedores (HU-11) ─────────────────────────────
+-- Registra productos devueltos a un proveedor por defecto, exceso o error
+CREATE TABLE IF NOT EXISTS devoluciones (
+    id           SERIAL PRIMARY KEY,
+    numero_dev   VARCHAR(30) UNIQUE NOT NULL, -- Ej: DEV-20250401-0001
+    proveedor_id INTEGER REFERENCES proveedores(id),
+    producto_id  INTEGER REFERENCES productos(id),
+    usuario_id   INTEGER REFERENCES usuarios(id),
+    cantidad     INTEGER NOT NULL CHECK (cantidad > 0),
+    motivo       TEXT NOT NULL,               -- Razón de la devolución
+    estado       VARCHAR(20) DEFAULT 'Pendiente',
+    -- Estados posibles: 'Pendiente' | 'Procesada' | 'Rechazada'
+    fecha        TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ── SPRINT 3: Promociones y descuentos (HU-12) ───────────────────────────────
+-- Define descuentos automáticos por producto o categoría con rango de fechas
+CREATE TABLE IF NOT EXISTS promociones (
+    id             SERIAL PRIMARY KEY,
+    nombre         VARCHAR(150)  NOT NULL,       -- Ej: "Black Friday Frenos"
+    tipo_descuento VARCHAR(20)   NOT NULL,        -- 'porcentaje' | 'valor_fijo'
+    valor          NUMERIC(12,2) NOT NULL CHECK (valor > 0),
+    producto_id    INTEGER REFERENCES productos(id),   -- NULL si aplica por categoría
+    categoria_id   INTEGER REFERENCES categorias(id),  -- NULL si aplica por producto
+    fecha_inicio   DATE NOT NULL,
+    fecha_fin      DATE NOT NULL,
+    activa         BOOLEAN DEFAULT TRUE,
+    creado_por     INTEGER REFERENCES usuarios(id),
+    creado_en      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    -- Exactamente uno de los dos debe tener valor (validación de negocio)
+    CONSTRAINT promo_target CHECK (
+        (producto_id IS NOT NULL AND categoria_id IS NULL) OR
+        (producto_id IS NULL AND categoria_id IS NOT NULL)
+    )
+);
+
+-- ============================================================
+--  Datos iniciales (idempotentes con ON CONFLICT DO NOTHING)
+-- ============================================================
+INSERT INTO roles (nombre, descripcion) VALUES
+    ('Gerencia',   'Acceso total al sistema'),
+    ('Vendedor',   'Acceso a ventas y catálogo'),
+    ('Inventario', 'Acceso a inventario y compras')
+ON CONFLICT (nombre) DO NOTHING;
+
+-- Admin por defecto  (password: admin123)
+INSERT INTO usuarios (cedula, nombre, username, password_hash, rol_id)
+SELECT '0000000000', 'Administrador', 'admin',
+       '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMZJaaaSwm65NwQ2p0nQbWAqhO',
+       r.id
+FROM roles r WHERE r.nombre = 'Gerencia'
+ON CONFLICT (username) DO NOTHING;
+
+INSERT INTO categorias (nombre) VALUES
+    ('Frenos'), ('Motor'), ('Suspensión'), ('Eléctrico'),
+    ('Transmisión'), ('Carrocería'), ('Lubricantes'), ('Filtros')
+ON CONFLICT (nombre) DO NOTHING;
+
+INSERT INTO proveedores (nombre, contacto, telefono, email, nit) VALUES
+    ('Repuestos Colombia S.A.S', 'Carlos Mendoza', '3001234567',
+     'ventas@repuestoscol.com', '900123456-1'),
+    ('Moto Parts Express',       'Sandra López',   '3117654321',
+     'pedidos@motoparts.com',    '800654321-2')
+ON CONFLICT (nit) DO NOTHING;

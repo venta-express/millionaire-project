@@ -1,0 +1,35 @@
+﻿name: SonarCloud Analysis
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+    branches:
+      - master
+      - main
+jobs:
+  sonarcloud:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        run: python --version
+      - name: Install dependencies
+        run: pip install pytest pytest-cov psycopg2-binary bcrypt openpyxl reportlab
+      - name: Run tests with coverage
+        run: pytest tests/ --cov=. --cov-report=xml -v || true
+      - name: SonarCloud Scan
+        uses: sonarsource/sonarqube-scan-action@aa494459d7c39c106cc77b166de8b4250a32bb97
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
+        with:
+          projectBaseDir: .
+          args: >
+            -Dsonar.projectKey=venta-express_millionaire-project
+            -Dsonar.organization=venta-express
+            -Dsonar.python.coverage.reportPaths=coverage.xml
+            -Dsonar.python.version=3.13
